@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>X1877</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Raleway:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100%; min-height:100vh; background:#0a0a0a; color:#e8e0cc; font-family:'Raleway',sans-serif; overflow-x:hidden; }
+body { display:flex; justify-content:center; padding:36px 16px 70px; }
+#c { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; }
+#glow { position:fixed; top:0; left:0; width:100%; height:100%; background:radial-gradient(ellipse 70% 50% at 50% 0%, rgba(201,168,76,0.09) 0%, transparent 65%); pointer-events:none; z-index:0; }
+.card { position:relative; z-index:1; width:100%; max-width:360px; display:flex; flex-direction:column; align-items:center; }
+.av-wrap { width:110px; height:110px; position:relative; margin-bottom:16px; flex-shrink:0; }
+.av-ring { position:absolute; inset:-4px; border-radius:50%; background:conic-gradient(#f0d080,#7a5f2a,#c9a84c,#f0d080); animation:spin 7s linear infinite; }
+@keyframes spin { to{ transform:rotate(360deg) } }
+.av-ring::after { content:''; position:absolute; inset:3px; border-radius:50%; background:#0a0a0a; }
+.av-wrap img { position:absolute; inset:0; z-index:2; width:100%; height:100%; border-radius:50%; object-fit:cover; }
+.name { font-family:'Cinzel',serif; font-size:1.8rem; font-weight:900; letter-spacing:.12em; background:linear-gradient(135deg,#f0d080 0%,#c9a84c 50%,#7a5f2a 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:4px; text-align:center; }
+.handle { font-size:.8rem; color:#7a5f2a; letter-spacing:.18em; text-transform:uppercase; margin-bottom:4px; }
+.bio { font-size:.82rem; color:#6b6050; text-align:center; margin-bottom:20px; }
+.orn { color:#7a5f2a; letter-spacing:.4em; opacity:.6; margin-bottom:14px; font-size:1rem; }
+.div { width:100%; height:1px; background:linear-gradient(90deg,transparent,#7a5f2a,transparent); margin-bottom:20px; }
+.sec { font-family:'Cinzel',serif; font-size:.58rem; letter-spacing:.25em; color:#7a5f2a; text-transform:uppercase; margin-bottom:10px; width:100%; }
+.vbox { width:100%; border-radius:14px; overflow:hidden; border:1px solid #7a5f2a; background:#111; margin-bottom:22px; }
+.vbox video { width:100%; max-height:300px; object-fit:cover; display:block; }
+.links { width:100%; display:flex; flex-direction:column; gap:10px; margin-bottom:24px; }
+.lb { display:flex; align-items:center; gap:12px; padding:12px 16px; border-radius:10px; background:#111; border:1px solid #222; color:#e8e0cc; text-decoration:none; transition:all .2s; }
+.lb:hover { border-color:#7a5f2a; transform:translateX(3px); box-shadow:-3px 0 0 #c9a84c; }
+.li { width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.lt { flex:1; }
+.ll { display:block; font-size:.62rem; color:#6b6050; letter-spacing:.13em; text-transform:uppercase; margin-bottom:1px; }
+.lv { display:block; font-size:.85rem; font-weight:500; }
+.la { color:#7a5f2a; font-size:1rem; }
+.ig { background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045); }
+.tg { background:#2AABEE; }
+.gh { background:#24292e; }
+.footer { font-size:.65rem; color:#6b6050; letter-spacing:.18em; text-transform:uppercase; margin-top:4px; }
+.footer b { color:#7a5f2a; font-weight:400; }
+.chat-send-btn { width:100%; display:flex; align-items:center; gap:12px; padding:12px 16px; border-radius:10px; background:#111; border:1px solid #1a1a1a; color:#e8e0cc; cursor:pointer; transition:all .2s; margin-bottom:10px; }
+.chat-send-btn:hover { border-color:#7a5f2a; transform:translateX(3px); box-shadow:-3px 0 0 #c9a84c; }
+.chat-icon { background:linear-gradient(135deg,#1a1a2e,#16213e); }
+.modal-overlay { display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.85); backdrop-filter:blur(6px); align-items:center; justify-content:center; padding:20px; }
+.modal-overlay.open { display:flex; }
+.modal-box { width:100%; max-width:360px; background:#0e0e0e; border:1px solid #2a2a1a; border-radius:18px; padding:24px 20px; position:relative; animation:fadeUp .25s ease; }
+@keyframes fadeUp { from{transform:translateY(30px);opacity:0;} to{transform:translateY(0);opacity:1;} }
+.modal-title { font-family:'Cinzel',serif; font-size:.9rem; letter-spacing:.2em; background:linear-gradient(135deg,#f0d080,#c9a84c); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:6px; text-align:center; }
+.modal-sub { font-size:.7rem; color:#6b6050; text-align:center; letter-spacing:.12em; margin-bottom:18px; }
+.msg-textarea { width:100%; min-height:110px; resize:none; background:#151515; border:1px solid #2a2a1a; border-radius:10px; color:#e8e0cc; font-family:'Raleway',sans-serif; font-size:.85rem; padding:12px; outline:none; transition:border .2s; line-height:1.5; }
+.msg-textarea:focus { border-color:#7a5f2a; }
+.msg-textarea::placeholder { color:#3a3028; }
+.char-count { font-size:.62rem; color:#3a3028; text-align:right; margin-top:4px; margin-bottom:14px; }
+.char-count span { color:#7a5f2a; }
+.send-btn { width:100%; padding:12px; border-radius:10px; background:linear-gradient(135deg,#c9a84c,#7a5f2a); border:none; color:#0a0a0a; font-family:'Cinzel',serif; font-size:.8rem; letter-spacing:.2em; font-weight:700; cursor:pointer; transition:all .2s; }
+.send-btn:hover { opacity:.85; transform:translateY(-1px); }
+.send-btn:disabled { opacity:.4; cursor:not-allowed; transform:none; }
+.modal-close { position:absolute; top:14px; right:16px; background:none; border:none; color:#6b6050; font-size:1.2rem; cursor:pointer; }
+.modal-close:hover { color:#c9a84c; }
+.success-msg { display:none; text-align:center; padding:10px 0; font-size:.8rem; color:#c9a84c; letter-spacing:.1em; }
+.secret-trigger { cursor:pointer; user-select:none; color:#7a5f2a; transition:color .2s; }
+.secret-trigger:hover { color:#c9a84c; }
+.inbox-overlay { display:none; position:fixed; inset:0; z-index:99999; background:rgba(0,0,0,0.97); backdrop-filter:blur(10px); flex-direction:column; }
+.inbox-overlay.open { display:flex; }
+.inbox-header { display:flex; align-items:center; justify-content:space-between; padding:18px 20px 14px; border-bottom:1px solid #1e1e12; flex-shrink:0; }
+.inbox-title { font-family:'Cinzel',serif; font-size:.9rem; letter-spacing:.2em; background:linear-gradient(135deg,#f0d080,#c9a84c); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.inbox-close { background:none; border:none; color:#6b6050; font-size:1.3rem; cursor:pointer; }
+.inbox-close:hover { color:#c9a84c; }
+.inbox-body { flex:1; overflow-y:auto; padding:16px 20px; display:flex; flex-direction:column; gap:10px; }
+.pin-screen { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:30px 20px; }
+.pin-label { font-family:'Cinzel',serif; font-size:.8rem; letter-spacing:.2em; color:#7a5f2a; }
+.pin-input { background:#111; border:1px solid #2a2a1a; border-radius:10px; color:#c9a84c; font-family:'Courier New',monospace; font-size:1.4rem; padding:10px 16px; text-align:center; width:180px; outline:none; letter-spacing:.4em; }
+.pin-input:focus { border-color:#7a5f2a; }
+.pin-btn { padding:10px 28px; border-radius:8px; background:linear-gradient(135deg,#c9a84c,#7a5f2a); border:none; color:#0a0a0a; font-family:'Cinzel',serif; font-size:.75rem; letter-spacing:.2em; cursor:pointer; }
+.pin-error { font-size:.72rem; color:#8b3030; letter-spacing:.1em; display:none; }
+.msg-card { background:#0e0e0e; border:1px solid #1e1e12; border-radius:12px; padding:14px 16px; position:relative; animation:fadeUp .2s ease; }
+.msg-time { font-size:.6rem; color:#3a3028; letter-spacing:.1em; margin-bottom:6px; }
+.msg-text { font-size:.83rem; color:#d4c8a8; line-height:1.6; word-break:break-word; }
+.msg-del { position:absolute; top:10px; right:12px; background:none; border:none; color:#2a2018; font-size:.8rem; cursor:pointer; transition:color .2s; }
+.msg-del:hover { color:#8b3030; }
+.empty-inbox { text-align:center; color:#2a2018; font-size:.75rem; letter-spacing:.15em; margin-top:40px; }
+.inbox-actions { padding:14px 20px; border-top:1px solid #1e1e12; display:flex; gap:10px; flex-shrink:0; }
+.clear-all-btn { flex:1; padding:10px; border-radius:8px; background:#0e0e0e; border:1px solid #2a1a1a; color:#6b3030; font-size:.7rem; letter-spacing:.15em; cursor:pointer; font-family:'Cinzel',serif; }
+.clear-all-btn:hover { border-color:#8b3030; color:#c94040; }
+.msg-count-badge { font-size:.6rem; color:#c9a84c; letter-spacing:.1em; margin-left:6px; opacity:.7; }
+.loading-spinner { text-align:center; color:#7a5f2a; font-size:.75rem; letter-spacing:.15em; margin-top:30px; animation:pulse 1.2s ease infinite; }
+@keyframes pulse { 0%,100%{opacity:.4;} 50%{opacity:1;} }
+#codeLayer { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:1; overflow:hidden; }
+.code-float { position:absolute; font-family:'Courier New',monospace; font-size:.65rem; color:rgba(201,168,76,0.22); white-space:nowrap; animation:floatUp linear infinite; user-select:none; }
+@keyframes floatUp { 0%{transform:translateY(100vh);opacity:0;} 10%{opacity:1;} 90%{opacity:1;} 100%{transform:translateY(-20vh);opacity:0;} }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="glow"></div>
+<div class="card">
+  <div class="av-wrap">
+    <div class="av-ring"></div>
+    <img src="https://raw.githubusercontent.com/x1877/x1877.github.io/refs/heads/main/IMG_6369.jpeg" alt="7amo"/>
+  </div>
+  <div class="name">X1877</div>
+  <div class="handle">@7amo</div>
+  <div class="bio">Dark · web · 19 👑</div>
+  <div class="orn">— ✦ —</div>
+  <div class="div"></div>
+  <div class="sec"></div>
+  <div class="vbox">
+    <video id="vid" loop muted playsinline webkit-playsinline preload="auto">
+      <source src="https://github.com/x1877/x1877.github.io/raw/refs/heads/main/VID_20240411_102937_945.mp4" type="video/mp4">
+    </video>
+  </div>
+  <div class="sec">◈</div>
+  <div class="links">
+    <div class="chat-send-btn" onclick="openChatModal()">
+      <div class="li chat-icon">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="rgba(201,168,76,0.9)" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+        </svg>
+      </div>
+      <div class="lt"><span class="ll">Anonymous</span><span class="lv"> you can send anonymous message 🔒</span></div>
+      <span class="la">›</span>
+    </div>
+    <a href="https://instagram.com/197.1.1" target="_blank" class="lb">
+      <div class="li ig"><svg width="18" height="18" fill="white" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></div>
+      <div class="lt"><span class="ll">Instagram</span><span class="lv">@197.1.1</span></div><span class="la">›</span>
+    </a>
+    <a href="https://t.me/x1877" target="_blank" class="lb">
+      <div class="li tg"><svg width="18" height="18" fill="white" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg></div>
+      <div class="lt"><span class="ll">Telegram</span><span class="lv">@x1877</span></div><span class="la">›</span>
+    </a>
+    <a href="https://github.com/x1877" target="_blank" class="lb">
+      <div class="li gh"><svg width="18" height="18" fill="white" viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></div>
+      <div class="lt"><span class="ll">GitHub</span><span class="lv">x1877</span></div><span class="la">›</span>
+    </a>
+  </div>
+  <div class="div"></div>
+  <div class="footer">X1877 · <b class="secret-trigger" onclick="openInbox()">X1877</b></div>
+</div>
+
+<!-- SEND MODAL -->
+<div class="modal-overlay" id="chatModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeChatModal()">✕</button>
+    <div class="modal-title">🔒 رسالة مجهولة</div>
+    <div class="modal-sub">اسمك مش راح يظهر · anonymous message</div>
+    <textarea class="msg-textarea" id="msgInput" placeholder="اكتب رسالتك هنا..." maxlength="400" oninput="updateChar()"></textarea>
+    <div class="char-count"><span id="charNum">0</span>/400</div>
+    <button class="send-btn" id="sendBtn" onclick="sendMessage()">إرسال ✦</button>
+    <div class="success-msg" id="successMsg">✦ تم الإرسال بنجاح ✦</div>
+  </div>
+</div>
+
+<!-- INBOX -->
+<div class="inbox-overlay" id="inboxPanel">
+  <div class="inbox-header">
+    <div><span class="inbox-title">◈ صندوق الرسائل</span><span class="msg-count-badge" id="msgCountBadge"></span></div>
+    <button class="inbox-close" onclick="closeInbox()">✕</button>
+  </div>
+  <div class="pin-screen" id="pinScreen">
+    <div class="pin-label">◈ أدخل الرمز السري</div>
+    <input type="password" class="pin-input" id="pinInput" maxlength="6" placeholder="••••••" onkeydown="if(event.key==='Enter') checkPin()"/>
+    <button class="pin-btn" onclick="checkPin()">دخول</button>
+    <div class="pin-error" id="pinError">✕ رمز خاطئ</div>
+  </div>
+  <div class="inbox-body" id="inboxBody" style="display:none;">
+    <div class="empty-inbox" id="emptyNotice" style="display:none;">◈ لا توجد رسائل بعد</div>
+    <div class="loading-spinner" id="loadingSpinner">◈ جاري التحميل...</div>
+  </div>
+  <div class="inbox-actions" id="inboxActions" style="display:none;">
+    <button class="clear-all-btn" onclick="clearAllMessages()">◈ حذف الكل</button>
+  </div>
+</div>
+
+<audio id="bgMusic" loop>
+  <source src="https://raw.githubusercontent.com/x1877/x1877.github.io/refs/heads/main/8489120397.mp3" type="audio/mpeg">
+</audio>
+<div id="codeLayer"></div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyBzOyrkF5fCw-xYDj2teE8abapHAyDyXkE",
+  authDomain: "x1877m.firebaseapp.com",
+  projectId: "x1877m",
+  storageBucket: "x1877m.firebasestorage.app",
+  messagingSenderId: "264666600140",
+  appId: "1:264666600140:web:ec02edb1941d75f625a869"
+});
+const db = getFirestore(app);
+
+window._fb = { db, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, serverTimestamp };
+window._firebaseReady = true;
+window.dispatchEvent(new Event('firebaseReady'));
+</script>
+
+<script>
+const COLLECTION = "messages";
+const SECRET_PIN = "1877"; // ← غيّر الرمز هنا
+let pinPassed = false;
+
+// Stars
+const canvas=document.getElementById('c'),ctx=canvas.getContext('2d');
+function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+resize();window.addEventListener('resize',resize);
+const stars=Array.from({length:100},()=>({x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,r:Math.random()*1.2+0.2,a:Math.random(),sp:Math.random()*0.3+0.08,dr:(Math.random()-0.5)*0.2,ts:Math.random()*0.015+0.004,td:Math.random()>0.5?1:-1,gold:Math.random()>0.6}));
+(function loop(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;stars.forEach(s=>{s.a+=s.ts*s.td;if(s.a>=1){s.a=1;s.td=-1;}if(s.a<=0.05){s.a=0.05;s.td=1;}s.y-=s.sp;s.x+=s.dr;if(s.y<-4){s.y=window.innerHeight+4;s.x=Math.random()*window.innerWidth;}if(s.x<-4)s.x=window.innerWidth;if(s.x>window.innerWidth+4)s.x=0;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);if(s.gold){ctx.shadowColor='rgba(201,168,76,0.8)';ctx.shadowBlur=4;ctx.fillStyle=`rgba(201,168,76,${s.a})`;}else{ctx.shadowBlur=0;ctx.fillStyle=`rgba(230,220,190,${s.a*0.6})`;}ctx.fill();ctx.shadowBlur=0;});requestAnimationFrame(loop);})();
+
+// Video
+const vid=document.getElementById('vid');vid.play().catch(()=>{});
+document.addEventListener('touchstart',()=>vid.play(),{once:true});
+vid.addEventListener('click',()=>vid.paused?vid.play():vid.pause());
+
+// Music
+const bgMusic=document.getElementById("bgMusic");bgMusic.volume=0.4;
+function tryPlay(){bgMusic.play().catch(()=>{});}tryPlay();
+document.addEventListener('click',tryPlay,{once:true});document.addEventListener('touchstart',tryPlay,{once:true});
+
+// Floating code
+(function(){const layer=document.getElementById('codeLayer');const snippets=['def orbit(planet, t):','import space','git commit -m "🚀"','while alive: code()','ssh x1877@universe','SELECT * FROM stars','npm run deploy','curl -X POST /hack','chmod 777 life.sh','x1877 = lambda: 1337','ping 0.0.0.0','sudo rm -rf boring/','for soul in matrix:','{ "dev": "x1877" }','const me = "x1877"','> access granted ✓','fork() → exec(dream)'];function spawn(){const el=document.createElement('div');el.className='code-float';el.textContent=snippets[Math.floor(Math.random()*snippets.length)];el.style.left=(Math.random()*95)+'%';el.style.fontSize=(Math.random()*0.3+0.55)+'rem';const dur=Math.random()*18+12;el.style.animationDuration=dur+'s';el.style.animationDelay=(Math.random()*-dur)+'s';layer.appendChild(el);setTimeout(()=>el.remove(),(dur+1)*1000);}for(let i=0;i<18;i++)spawn();setInterval(spawn,2200);})();
+
+function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// Send Modal
+function openChatModal(){document.getElementById('chatModal').classList.add('open');document.getElementById('msgInput').focus();}
+window.openChatModal=openChatModal;
+function closeChatModal(){document.getElementById('chatModal').classList.remove('open');document.getElementById('msgInput').value='';document.getElementById('charNum').textContent='0';document.getElementById('successMsg').style.display='none';const b=document.getElementById('sendBtn');b.style.display='block';b.disabled=false;b.textContent='إرسال ✦';}
+window.closeChatModal=closeChatModal;
+function updateChar(){document.getElementById('charNum').textContent=document.getElementById('msgInput').value.length;}
+window.updateChar=updateChar;
+
+async function sendMessage(){
+  const text=document.getElementById('msgInput').value.trim();
+  if(!text)return;
+  if(!window._firebaseReady){alert('جاري الاتصال، انتظر ثانية');return;}
+  const btn=document.getElementById('sendBtn');btn.disabled=true;btn.textContent='...';
+  try{
+    const fb=window._fb;
+    await fb.addDoc(fb.collection(fb.db,COLLECTION),{text,time:new Date().toISOString(),ts:fb.serverTimestamp()});
+    btn.style.display='none';document.getElementById('successMsg').style.display='block';
+    setTimeout(closeChatModal,1800);
+  }catch(e){btn.disabled=false;btn.textContent='إرسال ✦';alert('خطأ في الإرسال');}
+}
+window.sendMessage=sendMessage;
+
+// Inbox
+function openInbox(){
+  document.getElementById('inboxPanel').classList.add('open');
+  if(!pinPassed){document.getElementById('pinScreen').style.display='flex';document.getElementById('inboxBody').style.display='none';document.getElementById('inboxActions').style.display='none';setTimeout(()=>document.getElementById('pinInput').focus(),100);}
+  else renderMessages();
+}
+window.openInbox=openInbox;
+function closeInbox(){document.getElementById('inboxPanel').classList.remove('open');document.getElementById('pinInput').value='';document.getElementById('pinError').style.display='none';}
+window.closeInbox=closeInbox;
+function checkPin(){
+  if(document.getElementById('pinInput').value===SECRET_PIN){
+    pinPassed=true;
+    document.getElementById('pinScreen').style.display='none';
+    document.getElementById('inboxBody').style.display='flex';
+    document.getElementById('inboxActions').style.display='flex';
+    renderMessages();
+  }else{
+    document.getElementById('pinError').style.display='block';
+    document.getElementById('pinInput').value='';
+    document.getElementById('pinInput').focus();
+    setTimeout(()=>document.getElementById('pinError').style.display='none',2000);
+  }
+}
+window.checkPin=checkPin;
+
+async function renderMessages(){
+  if(!window._firebaseReady){setTimeout(renderMessages,500);return;}
+  const body=document.getElementById('inboxBody');
+  const spinner=document.getElementById('loadingSpinner');
+  const empty=document.getElementById('emptyNotice');
+  spinner.style.display='block';empty.style.display='none';
+  Array.from(body.querySelectorAll('.msg-card')).forEach(el=>el.remove());
+  try{
+    const fb=window._fb;
+    const q=fb.query(fb.collection(fb.db,COLLECTION),fb.orderBy('ts','desc'));
+    const snap=await fb.getDocs(q);
+    spinner.style.display='none';
+    document.getElementById('msgCountBadge').textContent=snap.size?`(${snap.size})`:'';
+    if(snap.empty){empty.style.display='block';return;}
+    snap.forEach(d=>{
+      const m=d.data();
+      const card=document.createElement('div');card.className='msg-card';
+      const t=m.time?new Date(m.time).toLocaleString('ar-IQ'):'—';
+      card.innerHTML=`<div class="msg-time">${t}</div><div class="msg-text">${escapeHtml(m.text)}</div><button class="msg-del" onclick="deleteMessage('${d.id}')">✕</button>`;
+      body.appendChild(card);
+    });
+  }catch(e){spinner.style.display='none';empty.textContent='◈ خطأ في التحميل';empty.style.display='block';}
+}
+
+async function deleteMessage(id){
+  if(!window._firebaseReady)return;
+  const fb=window._fb;
+  await fb.deleteDoc(fb.doc(fb.db,COLLECTION,id));
+  renderMessages();
+}
+window.deleteMessage=deleteMessage;
+
+async function clearAllMessages(){
+  if(!confirm('حذف كل الرسائل؟'))return;
+  const fb=window._fb;
+  const snap=await fb.getDocs(fb.collection(fb.db,COLLECTION));
+  await Promise.all(snap.docs.map(d=>fb.deleteDoc(fb.doc(fb.db,COLLECTION,d.id))));
+  renderMessages();
+}
+window.clearAllMessages=clearAllMessages;
+
+document.getElementById('chatModal').addEventListener('click',function(e){if(e.target===this)closeChatModal();});
+</script>
+</body>
+</html>
