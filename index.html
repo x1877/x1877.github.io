@@ -458,7 +458,7 @@ animation:crownFloat 3s ease infinite;
   <div class="div"></div>
   <div class="sec"></div>
   <div class="vbox">
-    <video id="vid" loop muted playsinline webkit-playsinline preload="auto">
+    <video id="vid" loop muted playsinline webkit-playsinline x5-playsinline x5-video-player-type="h5" preload="auto">
       <source src="https://github.com/x1877/x1877.github.io/raw/refs/heads/main/4642065665316754343.mp4" type="video/mp4">
     </video>
   </div>
@@ -588,15 +588,15 @@ animation:crownFloat 3s ease infinite;
   <div class="stats-section">
     <div class="stats-grid">
       <div class="stat-box">
-        <span class="stat-num" data-target="300">300</span>
+        <span class="stat-num" data-target="300">0</span>
         <span class="stat-lbl" data-i18n="stat-commits">Commits</span>
       </div>
       <div class="stat-box">
-        <span class="stat-num" data-target="47">47</span>
+        <span class="stat-num" data-target="47">0</span>
         <span class="stat-lbl" data-i18n="stat-tools">Tools Built</span>
       </div>
       <div class="stat-box">
-        <span class="stat-num" data-target="5">5</span>
+        <span class="stat-num" data-target="5">0</span>
         <span class="stat-lbl" data-i18n="stat-langs">Langs</span>
       </div>
     </div>
@@ -760,7 +760,7 @@ animation:crownFloat 3s ease infinite;
 </div>
 
 <audio id="bgMusic" loop>
-  <source src="https://cdn.jsdelivr.net/gh/x1877/x1877.github.io@main/8489120397.mp3" type="audio/mpeg">
+  <source src="https://raw.githubusercontent.com/x1877/x1877.github.io/refs/heads/main/8489120397.mp3" type="audio/mpeg">
 </audio>
 <div id="codeLayer"></div>
 
@@ -798,15 +798,48 @@ resize();window.addEventListener('resize',resize);
 const stars=Array.from({length:100},()=>({x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,r:Math.random()*1.2+0.2,a:Math.random(),sp:Math.random()*0.3+0.08,dr:(Math.random()-0.5)*0.2,ts:Math.random()*0.015+0.004,td:Math.random()>0.5?1:-1,gold:Math.random()>0.6}));
 (function loop(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;stars.forEach(s=>{s.a+=s.ts*s.td;if(s.a>=1){s.a=1;s.td=-1;}if(s.a<=0.05){s.a=0.05;s.td=1;}s.y-=s.sp;s.x+=s.dr;if(s.y<-4){s.y=window.innerHeight+4;s.x=Math.random()*window.innerWidth;}if(s.x<-4)s.x=window.innerWidth;if(s.x>window.innerWidth+4)s.x=0;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);if(s.gold){ctx.shadowColor='rgba(201,168,76,0.8)';ctx.shadowBlur=4;ctx.fillStyle=`rgba(201,168,76,${s.a})`;}else{ctx.shadowBlur=0;ctx.fillStyle=`rgba(230,220,190,${s.a*0.6})`;}ctx.fill();ctx.shadowBlur=0;});requestAnimationFrame(loop);})();
 
-// Video
-const vid=document.getElementById('vid');vid.play().catch(()=>{});
-document.addEventListener('touchstart',()=>vid.play(),{once:true});
+// Video - Fixed for Android & iOS
+const vid=document.getElementById('vid');
+vid.muted=true; // ensure muted for autoplay policy
+vid.playsInline=true;
+vid.play().catch(()=>{});
+document.addEventListener('touchstart',()=>vid.play(),{once:true,passive:true});
+document.addEventListener('click',()=>{if(vid.paused)vid.play();},{once:true});
 vid.addEventListener('click',()=>vid.paused?vid.play():vid.pause());
 
-// Music
-const bgMusic=document.getElementById("bgMusic");bgMusic.volume=0.4;
-function tryPlay(){bgMusic.play().catch(()=>{});}tryPlay();
-document.addEventListener('click',tryPlay,{once:true});document.addEventListener('touchstart',tryPlay,{once:true});
+// Music - Fixed for Android & iOS
+const bgMusic=document.getElementById("bgMusic");
+bgMusic.volume=0.4;
+let musicStarted=false;
+
+function tryPlay(){
+  if(musicStarted)return;
+  const p=bgMusic.play();
+  if(p!==undefined){
+    p.then(()=>{musicStarted=true;})
+     .catch(()=>{/* user gesture required, will retry on interaction */});
+  }
+}
+
+// Try immediately (works on some browsers)
+tryPlay();
+
+// Retry on ANY user interaction (not once:true so it keeps trying until success)
+function onUserInteraction(){
+  if(!musicStarted){
+    bgMusic.play().then(()=>{
+      musicStarted=true;
+      document.removeEventListener('click',onUserInteraction);
+      document.removeEventListener('touchstart',onUserInteraction);
+      document.removeEventListener('touchend',onUserInteraction);
+      document.removeEventListener('keydown',onUserInteraction);
+    }).catch(()=>{});
+  }
+}
+document.addEventListener('click',onUserInteraction);
+document.addEventListener('touchstart',onUserInteraction,{passive:true});
+document.addEventListener('touchend',onUserInteraction,{passive:true});
+document.addEventListener('keydown',onUserInteraction);
 
 // Floating code
 (function(){const layer=document.getElementById('codeLayer');const snippets=['def orbit(planet, t):','import space','git commit -m "🚀"','while alive: code()','ssh x1877@universe','SELECT * FROM stars','npm run deploy','curl -X POST /hack','chmod 777 life.sh','x1877 = lambda: 1337','ping 0.0.0.0','sudo rm -rf boring/','for soul in matrix:','{ "dev": "x1877" }','const me = "x1877"','> access granted ✓','fork() → exec(dream)'];function spawn(){const el=document.createElement('div');el.className='code-float';el.textContent=snippets[Math.floor(Math.random()*snippets.length)];el.style.left=(Math.random()*95)+'%';el.style.fontSize=(Math.random()*0.3+0.55)+'rem';const dur=Math.random()*18+12;el.style.animationDuration=dur+'s';el.style.animationDelay=(Math.random()*-dur)+'s';layer.appendChild(el);setTimeout(()=>el.remove(),(dur+1)*1000);}for(let i=0;i<18;i++)spawn();setInterval(spawn,2200);})();
@@ -1194,13 +1227,15 @@ function typeBio(){
 }
 typeBio();
 
-// ── Stats Counter ──
+// ── Stats Counter - Fixed (won't show 0 on re-open) ──
+let countersAnimated = false;
 function animateCounters(){
+  countersAnimated = true;
   document.querySelectorAll('.stat-num').forEach(el=>{
     const target=+el.dataset.target;
     const suffix=el.dataset.suffix||'';
     let cur=0;
-    const step=Math.ceil(target/40);
+    const step=Math.max(1,Math.ceil(target/40));
     const t=setInterval(()=>{
       cur=Math.min(cur+step,target);
       el.textContent=cur+(cur===target?suffix:'');
@@ -1208,11 +1243,27 @@ function animateCounters(){
     },35);
   });
 }
-const statsObs=new IntersectionObserver(entries=>{
-  entries.forEach(e=>{if(e.isIntersecting){animateCounters();statsObs.disconnect();}});
-},{threshold:.5});
+
+// Use visibility check instead of IntersectionObserver to avoid zero on reload
 const statsEl=document.querySelector('.stats-grid');
-if(statsEl)statsObs.observe(statsEl);
+if(statsEl){
+  const statsObs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting && !countersAnimated){
+        animateCounters();
+        statsObs.disconnect();
+      }
+    });
+  },{threshold:.3});
+  statsObs.observe(statsEl);
+  // Fallback: if already visible on load (short page / large screen)
+  setTimeout(()=>{
+    if(!countersAnimated){
+      const rect=statsEl.getBoundingClientRect();
+      if(rect.top < window.innerHeight) animateCounters();
+    }
+  },600);
+}
 
 // ── Terminal ──
 const termLines=[
