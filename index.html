@@ -132,33 +132,6 @@ body[dir="rtl"] .sec, body[dir="rtl"] .visitor-label, body[dir="rtl"] .stat-lbl 
   100%{ transform:translateY(110vh) rotate(720deg); opacity:0; }
 }
 
-/* ── MUSIC BUTTON ── */
-#musicBtn {
-  position:fixed; bottom:86px; left:24px; z-index:9990;
-  width:52px; height:52px; border-radius:50%;
-  background:linear-gradient(135deg,#1a1500,#0f0d00);
-  border:1.5px solid #c9a84c;
-  display:flex; align-items:center; justify-content:center;
-  cursor:none; box-shadow:0 4px 20px rgba(201,168,76,0.25);
-  animation:bubbleFloat 3s ease-in-out infinite;
-  transition:border-color .3s, box-shadow .3s;
-}
-#musicBtn:hover { box-shadow:0 0 24px rgba(201,168,76,0.5); animation:none; transform:scale(1.12); }
-#musicBtn.paused { border-color:#3a3028; box-shadow:0 4px 12px rgba(0,0,0,0.4); }
-#musicWaves { display:flex; align-items:center; gap:3px; height:22px; }
-#musicWaves span {
-  display:block; width:3px; background:#c9a84c; border-radius:3px;
-}
-#musicWaves span:nth-child(1){ animation:mw1 .9s ease-in-out infinite; }
-#musicWaves span:nth-child(2){ animation:mw2 .9s ease-in-out infinite; }
-#musicWaves span:nth-child(3){ animation:mw3 .9s ease-in-out infinite; }
-#musicWaves span:nth-child(4){ animation:mw4 .9s ease-in-out infinite; }
-@keyframes mw1{0%,100%{height:6px}50%{height:18px}}
-@keyframes mw2{0%,100%{height:14px}50%{height:6px}}
-@keyframes mw3{0%,100%{height:18px}50%{height:8px}}
-@keyframes mw4{0%,100%{height:8px}50%{height:16px}}
-#musicBtn.paused #musicWaves span { animation:none; height:6px; opacity:.4; }
-
 /* ── FLOATING BUBBLE ── */
 #floatBubble {
   position:fixed; bottom:24px; left:24px; z-index:9990;
@@ -485,7 +458,7 @@ animation:crownFloat 3s ease infinite;
   <div class="div"></div>
   <div class="sec"></div>
   <div class="vbox">
-    <video id="vid" loop muted playsinline webkit-playsinline x5-playsinline x5-video-player-type="h5" preload="auto">
+    <video id="vid" loop muted playsinline webkit-playsinline preload="auto">
       <source src="https://github.com/x1877/x1877.github.io/raw/refs/heads/main/4642065665316754343.mp4" type="video/mp4">
     </video>
   </div>
@@ -786,16 +759,6 @@ animation:crownFloat 3s ease infinite;
   </svg>
 </div>
 
-<!-- MUSIC BUTTON -->
-<div id="musicBtn" onclick="toggleMusic()">
-  <div id="musicWaves">
-    <span></span><span></span><span></span><span></span>
-  </div>
-  <svg id="musicPauseIcon" style="display:none;" fill="none" viewBox="0 0 24 24" stroke="rgba(10,10,10,0.9)" stroke-width="2.5" width="22" height="22">
-    <path stroke-linecap="round" stroke-linejoin="round" d="M10 9v6m4-6v6"/>
-  </svg>
-</div>
-
 <audio id="bgMusic" loop>
   <source src="https://raw.githubusercontent.com/x1877/x1877.github.io/refs/heads/main/8489120397.mp3" type="audio/mpeg">
 </audio>
@@ -835,45 +798,15 @@ resize();window.addEventListener('resize',resize);
 const stars=Array.from({length:100},()=>({x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,r:Math.random()*1.2+0.2,a:Math.random(),sp:Math.random()*0.3+0.08,dr:(Math.random()-0.5)*0.2,ts:Math.random()*0.015+0.004,td:Math.random()>0.5?1:-1,gold:Math.random()>0.6}));
 (function loop(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;stars.forEach(s=>{s.a+=s.ts*s.td;if(s.a>=1){s.a=1;s.td=-1;}if(s.a<=0.05){s.a=0.05;s.td=1;}s.y-=s.sp;s.x+=s.dr;if(s.y<-4){s.y=window.innerHeight+4;s.x=Math.random()*window.innerWidth;}if(s.x<-4)s.x=window.innerWidth;if(s.x>window.innerWidth+4)s.x=0;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);if(s.gold){ctx.shadowColor='rgba(201,168,76,0.8)';ctx.shadowBlur=4;ctx.fillStyle=`rgba(201,168,76,${s.a})`;}else{ctx.shadowBlur=0;ctx.fillStyle=`rgba(230,220,190,${s.a*0.6})`;}ctx.fill();ctx.shadowBlur=0;});requestAnimationFrame(loop);})();
 
-// Video - Fixed for Android & iOS
-const vid=document.getElementById('vid');
-vid.muted=true; // ensure muted for autoplay policy
-vid.playsInline=true;
-vid.play().catch(()=>{});
-document.addEventListener('touchstart',()=>vid.play(),{once:true,passive:true});
-document.addEventListener('click',()=>{if(vid.paused)vid.play();},{once:true});
+// Video
+const vid=document.getElementById('vid');vid.play().catch(()=>{});
+document.addEventListener('touchstart',()=>vid.play(),{once:true});
 vid.addEventListener('click',()=>vid.paused?vid.play():vid.pause());
 
-// Music - Toggle button
-const bgMusic=document.getElementById("bgMusic");
-bgMusic.volume=0.4;
-let musicPlaying=false;
-
-function toggleMusic(){
-  const btn=document.getElementById('musicBtn');
-  const waves=document.getElementById('musicWaves');
-  const pauseIcon=document.getElementById('musicPauseIcon');
-  if(!musicPlaying){
-    bgMusic.play().then(()=>{
-      musicPlaying=true;
-      btn.classList.remove('paused');
-      waves.style.display='flex';
-      pauseIcon.style.display='none';
-    }).catch(()=>{});
-  } else {
-    bgMusic.pause();
-    musicPlaying=false;
-    btn.classList.add('paused');
-    waves.style.display='none';
-    pauseIcon.style.display='block';
-  }
-}
-window.toggleMusic=toggleMusic;
-
-// Start paused state visually
-document.getElementById('musicBtn').classList.add('paused');
-document.getElementById('musicWaves').style.display='none';
-document.getElementById('musicPauseIcon').style.display='block';
+// Music
+const bgMusic=document.getElementById("bgMusic");bgMusic.volume=0.4;
+function tryPlay(){bgMusic.play().catch(()=>{});}tryPlay();
+document.addEventListener('click',tryPlay,{once:true});document.addEventListener('touchstart',tryPlay,{once:true});
 
 // Floating code
 (function(){const layer=document.getElementById('codeLayer');const snippets=['def orbit(planet, t):','import space','git commit -m "🚀"','while alive: code()','ssh x1877@universe','SELECT * FROM stars','npm run deploy','curl -X POST /hack','chmod 777 life.sh','x1877 = lambda: 1337','ping 0.0.0.0','sudo rm -rf boring/','for soul in matrix:','{ "dev": "x1877" }','const me = "x1877"','> access granted ✓','fork() → exec(dream)'];function spawn(){const el=document.createElement('div');el.className='code-float';el.textContent=snippets[Math.floor(Math.random()*snippets.length)];el.style.left=(Math.random()*95)+'%';el.style.fontSize=(Math.random()*0.3+0.55)+'rem';const dur=Math.random()*18+12;el.style.animationDuration=dur+'s';el.style.animationDelay=(Math.random()*-dur)+'s';layer.appendChild(el);setTimeout(()=>el.remove(),(dur+1)*1000);}for(let i=0;i<18;i++)spawn();setInterval(spawn,2200);})();
@@ -1261,15 +1194,13 @@ function typeBio(){
 }
 typeBio();
 
-// ── Stats Counter - Fixed (won't show 0 on re-open) ──
-let countersAnimated = false;
+// ── Stats Counter ──
 function animateCounters(){
-  countersAnimated = true;
   document.querySelectorAll('.stat-num').forEach(el=>{
     const target=+el.dataset.target;
     const suffix=el.dataset.suffix||'';
     let cur=0;
-    const step=Math.max(1,Math.ceil(target/40));
+    const step=Math.ceil(target/40);
     const t=setInterval(()=>{
       cur=Math.min(cur+step,target);
       el.textContent=cur+(cur===target?suffix:'');
@@ -1277,27 +1208,11 @@ function animateCounters(){
     },35);
   });
 }
-
-// Use visibility check instead of IntersectionObserver to avoid zero on reload
+const statsObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){animateCounters();statsObs.disconnect();}});
+},{threshold:.5});
 const statsEl=document.querySelector('.stats-grid');
-if(statsEl){
-  const statsObs=new IntersectionObserver(entries=>{
-    entries.forEach(e=>{
-      if(e.isIntersecting && !countersAnimated){
-        animateCounters();
-        statsObs.disconnect();
-      }
-    });
-  },{threshold:.3});
-  statsObs.observe(statsEl);
-  // Fallback: if already visible on load (short page / large screen)
-  setTimeout(()=>{
-    if(!countersAnimated){
-      const rect=statsEl.getBoundingClientRect();
-      if(rect.top < window.innerHeight) animateCounters();
-    }
-  },600);
-}
+if(statsEl)statsObs.observe(statsEl);
 
 // ── Terminal ──
 const termLines=[
@@ -1342,4 +1257,3 @@ document.getElementById('chatModal').addEventListener('click',function(e){if(e.t
 
 </body>
 </html>
-
