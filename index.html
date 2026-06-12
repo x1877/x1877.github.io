@@ -132,6 +132,33 @@ body[dir="rtl"] .sec, body[dir="rtl"] .visitor-label, body[dir="rtl"] .stat-lbl 
   100%{ transform:translateY(110vh) rotate(720deg); opacity:0; }
 }
 
+/* ── MUSIC BUTTON ── */
+#musicBtn {
+  position:fixed; bottom:86px; left:24px; z-index:9990;
+  width:52px; height:52px; border-radius:50%;
+  background:linear-gradient(135deg,#1a1500,#0f0d00);
+  border:1.5px solid #c9a84c;
+  display:flex; align-items:center; justify-content:center;
+  cursor:none; box-shadow:0 4px 20px rgba(201,168,76,0.25);
+  animation:bubbleFloat 3s ease-in-out infinite;
+  transition:border-color .3s, box-shadow .3s;
+}
+#musicBtn:hover { box-shadow:0 0 24px rgba(201,168,76,0.5); animation:none; transform:scale(1.12); }
+#musicBtn.paused { border-color:#3a3028; box-shadow:0 4px 12px rgba(0,0,0,0.4); }
+#musicWaves { display:flex; align-items:center; gap:3px; height:22px; }
+#musicWaves span {
+  display:block; width:3px; background:#c9a84c; border-radius:3px;
+}
+#musicWaves span:nth-child(1){ animation:mw1 .9s ease-in-out infinite; }
+#musicWaves span:nth-child(2){ animation:mw2 .9s ease-in-out infinite; }
+#musicWaves span:nth-child(3){ animation:mw3 .9s ease-in-out infinite; }
+#musicWaves span:nth-child(4){ animation:mw4 .9s ease-in-out infinite; }
+@keyframes mw1{0%,100%{height:6px}50%{height:18px}}
+@keyframes mw2{0%,100%{height:14px}50%{height:6px}}
+@keyframes mw3{0%,100%{height:18px}50%{height:8px}}
+@keyframes mw4{0%,100%{height:8px}50%{height:16px}}
+#musicBtn.paused #musicWaves span { animation:none; height:6px; opacity:.4; }
+
 /* ── FLOATING BUBBLE ── */
 #floatBubble {
   position:fixed; bottom:24px; left:24px; z-index:9990;
@@ -759,6 +786,16 @@ animation:crownFloat 3s ease infinite;
   </svg>
 </div>
 
+<!-- MUSIC BUTTON -->
+<div id="musicBtn" onclick="toggleMusic()">
+  <div id="musicWaves">
+    <span></span><span></span><span></span><span></span>
+  </div>
+  <svg id="musicPauseIcon" style="display:none;" fill="none" viewBox="0 0 24 24" stroke="rgba(10,10,10,0.9)" stroke-width="2.5" width="22" height="22">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M10 9v6m4-6v6"/>
+  </svg>
+</div>
+
 <audio id="bgMusic" loop>
   <source src="https://raw.githubusercontent.com/x1877/x1877.github.io/refs/heads/main/8489120397.mp3" type="audio/mpeg">
 </audio>
@@ -807,39 +844,36 @@ document.addEventListener('touchstart',()=>vid.play(),{once:true,passive:true});
 document.addEventListener('click',()=>{if(vid.paused)vid.play();},{once:true});
 vid.addEventListener('click',()=>vid.paused?vid.play():vid.pause());
 
-// Music - Fixed for Android & iOS
+// Music - Toggle button
 const bgMusic=document.getElementById("bgMusic");
 bgMusic.volume=0.4;
-let musicStarted=false;
+let musicPlaying=false;
 
-function tryPlay(){
-  if(musicStarted)return;
-  const p=bgMusic.play();
-  if(p!==undefined){
-    p.then(()=>{musicStarted=true;})
-     .catch(()=>{/* user gesture required, will retry on interaction */});
-  }
-}
-
-// Try immediately (works on some browsers)
-tryPlay();
-
-// Retry on ANY user interaction (not once:true so it keeps trying until success)
-function onUserInteraction(){
-  if(!musicStarted){
+function toggleMusic(){
+  const btn=document.getElementById('musicBtn');
+  const waves=document.getElementById('musicWaves');
+  const pauseIcon=document.getElementById('musicPauseIcon');
+  if(!musicPlaying){
     bgMusic.play().then(()=>{
-      musicStarted=true;
-      document.removeEventListener('click',onUserInteraction);
-      document.removeEventListener('touchstart',onUserInteraction);
-      document.removeEventListener('touchend',onUserInteraction);
-      document.removeEventListener('keydown',onUserInteraction);
+      musicPlaying=true;
+      btn.classList.remove('paused');
+      waves.style.display='flex';
+      pauseIcon.style.display='none';
     }).catch(()=>{});
+  } else {
+    bgMusic.pause();
+    musicPlaying=false;
+    btn.classList.add('paused');
+    waves.style.display='none';
+    pauseIcon.style.display='block';
   }
 }
-document.addEventListener('click',onUserInteraction);
-document.addEventListener('touchstart',onUserInteraction,{passive:true});
-document.addEventListener('touchend',onUserInteraction,{passive:true});
-document.addEventListener('keydown',onUserInteraction);
+window.toggleMusic=toggleMusic;
+
+// Start paused state visually
+document.getElementById('musicBtn').classList.add('paused');
+document.getElementById('musicWaves').style.display='none';
+document.getElementById('musicPauseIcon').style.display='block';
 
 // Floating code
 (function(){const layer=document.getElementById('codeLayer');const snippets=['def orbit(planet, t):','import space','git commit -m "🚀"','while alive: code()','ssh x1877@universe','SELECT * FROM stars','npm run deploy','curl -X POST /hack','chmod 777 life.sh','x1877 = lambda: 1337','ping 0.0.0.0','sudo rm -rf boring/','for soul in matrix:','{ "dev": "x1877" }','const me = "x1877"','> access granted ✓','fork() → exec(dream)'];function spawn(){const el=document.createElement('div');el.className='code-float';el.textContent=snippets[Math.floor(Math.random()*snippets.length)];el.style.left=(Math.random()*95)+'%';el.style.fontSize=(Math.random()*0.3+0.55)+'rem';const dur=Math.random()*18+12;el.style.animationDuration=dur+'s';el.style.animationDelay=(Math.random()*-dur)+'s';layer.appendChild(el);setTimeout(()=>el.remove(),(dur+1)*1000);}for(let i=0;i<18;i++)spawn();setInterval(spawn,2200);})();
@@ -1308,3 +1342,4 @@ document.getElementById('chatModal').addEventListener('click',function(e){if(e.t
 
 </body>
 </html>
+
