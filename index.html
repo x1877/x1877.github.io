@@ -421,50 +421,6 @@ pre.s-code {
 .snippet-panel { display:none; }
 .snippet-panel.active { display:block; }
 
-/* ── MUSIC PLAYER ── */
-#musicPlayer {
-  position:fixed; bottom:24px; right:24px; z-index:9990;
-  display:flex; align-items:center; gap:10px;
-  background:rgba(10,10,10,0.92); border:1px solid #2a2010;
-  border-radius:50px; padding:8px 14px 8px 8px;
-  box-shadow:0 4px 24px rgba(0,0,0,0.5), 0 0 0 1px rgba(201,168,76,0.08);
-  backdrop-filter:blur(12px);
-  transition:all .3s;
-}
-#musicPlayer:hover { border-color:#c9a84c; box-shadow:0 4px 24px rgba(201,168,76,0.18); }
-body.light #musicPlayer { background:rgba(237,232,220,0.95); border-color:#c9a84c55; }
-#musicPlayBtn {
-  width:36px; height:36px; border-radius:50%; border:none;
-  background:linear-gradient(135deg,#c9a84c,#7a5f2a);
-  color:#0a0a0a; font-size:.9rem; cursor:none;
-  display:flex; align-items:center; justify-content:center;
-  flex-shrink:0; transition:transform .2s;
-}
-#musicPlayBtn:hover { transform:scale(1.1); }
-.music-info { display:flex; flex-direction:column; gap:1px; }
-.music-title {
-  font-family:'Cinzel',serif; font-size:.58rem; letter-spacing:.15em;
-  background:linear-gradient(135deg,#f0d080,#c9a84c);
-  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
-  white-space:nowrap;
-}
-.music-bar {
-  display:flex; gap:2px; align-items:flex-end; height:12px;
-}
-.music-bar span {
-  display:inline-block; width:3px; background:#c9a84c; border-radius:2px;
-  animation:musicWave .8s ease infinite;
-}
-.music-bar span:nth-child(1){height:4px;animation-delay:0s}
-.music-bar span:nth-child(2){height:10px;animation-delay:.1s}
-.music-bar span:nth-child(3){height:7px;animation-delay:.2s}
-.music-bar span:nth-child(4){height:12px;animation-delay:.3s}
-.music-bar span:nth-child(5){height:5px;animation-delay:.4s}
-.music-bar.paused span { animation-play-state:paused; height:3px !important; }
-@keyframes musicWave {
-  0%,100%{transform:scaleY(1)} 50%{transform:scaleY(1.8)}
-}
-
 /* top hacker special card */
 .cert-card.special {
 background:linear-gradient(135deg,#0f0d00 0%,#1a1500 50%,#0f0d00 100%);
@@ -479,10 +435,14 @@ animation:crownFloat 3s ease infinite;
 0%,100%{transform:translateY(0) rotate(-5deg)}
 50%{transform:translateY(-4px) rotate(5deg)}
 }
+#musicBtn{position:fixed;bottom:88px;right:24px;z-index:9991;width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#c9a84c,#7a5f2a);border:none;font-size:1.2rem;cursor:none;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(201,168,76,0.35);transition:transform .2s;}
+#musicBtn:hover{transform:scale(1.12);}
 </style>
 
 </head>
 <body>
+<audio id="bgMusic" loop src="https://github.com/x1877/x1877.github.io/raw/refs/heads/main/x1877.mp3"></audio>
+<button id="musicBtn" onclick="(function(){var a=document.getElementById('bgMusic');if(a.paused){a.play();document.getElementById('musicBtn').textContent='🎵';}else{a.pause();document.getElementById('musicBtn').textContent='🎶';}})()" title="Music">🎶</button>
 <div id="scrollBar"></div>
 <div id="cur"></div>
 <div id="cur-ring"></div>
@@ -796,18 +756,6 @@ animation:crownFloat 3s ease infinite;
 </div>
 
 <!-- FLOATING BUBBLE -->
-<!-- Music Player -->
-<div id="musicPlayer">
-  <button id="musicPlayBtn" onclick="toggleMusic()">▶</button>
-  <div class="music-info">
-    <span class="music-title">🎵 X1877 — BGM</span>
-    <div class="music-bar paused" id="musicBar">
-      <span></span><span></span><span></span><span></span><span></span>
-    </div>
-  </div>
-</div>
-<audio id="bgMusic" loop src="https://github.com/x1877/x1877.github.io/raw/refs/heads/main/x1877.mp3"></audio>
-
 <div id="floatBubble" onclick="openChatModal()">
   <div class="bubble-ping"></div>
   <svg fill="none" viewBox="0 0 24 24" stroke="rgba(10,10,10,0.9)" stroke-width="2">
@@ -1309,27 +1257,9 @@ function switchSnippet(lang,tab){
 window.switchSnippet=switchSnippet;
 
 document.getElementById('chatModal').addEventListener('click',function(e){if(e.target===this)closeChatModal();});
-
-// ── Music Player ──
-const bgMusic = document.getElementById('bgMusic');
-const musicPlayBtn = document.getElementById('musicPlayBtn');
-const musicBar = document.getElementById('musicBar');
-let musicPlaying = false;
-function toggleMusic() {
-  if (musicPlaying) {
-    bgMusic.pause();
-    musicPlayBtn.textContent = '▶';
-    musicBar.classList.add('paused');
-  } else {
-    bgMusic.play().catch(()=>{});
-    musicPlayBtn.textContent = '⏸';
-    musicBar.classList.remove('paused');
-  }
-  musicPlaying = !musicPlaying;
-}
-bgMusic.volume = 0.5;
 </script>
 
 </body>
 </html>
+
 
