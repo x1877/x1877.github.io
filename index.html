@@ -435,14 +435,10 @@ animation:crownFloat 3s ease infinite;
 0%,100%{transform:translateY(0) rotate(-5deg)}
 50%{transform:translateY(-4px) rotate(5deg)}
 }
-#musicBtn{position:fixed;bottom:88px;right:24px;z-index:9991;width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#c9a84c,#7a5f2a);border:none;font-size:1.2rem;cursor:none;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(201,168,76,0.35);transition:transform .2s;}
-#musicBtn:hover{transform:scale(1.12);}
 </style>
 
 </head>
 <body>
-<audio id="bgMusic" loop src="https://github.com/x1877/x1877.github.io/raw/refs/heads/main/x1877.mp3"></audio>
-<button id="musicBtn" onclick="(function(){var a=document.getElementById('bgMusic');if(a.paused){a.play();document.getElementById('musicBtn').textContent='🎵';}else{a.pause();document.getElementById('musicBtn').textContent='🎶';}})()" title="Music">🎶</button>
 <div id="scrollBar"></div>
 <div id="cur"></div>
 <div id="cur-ring"></div>
@@ -1257,6 +1253,14 @@ function switchSnippet(lang,tab){
 window.switchSnippet=switchSnippet;
 
 document.getElementById('chatModal').addEventListener('click',function(e){if(e.target===this)closeChatModal();});
+
+// ── Music: play on first interaction ──
+const _mus = new Audio('https://github.com/x1877/x1877.github.io/raw/refs/heads/main/x1877.mp3');
+_mus.loop = true;
+_mus.volume = 0.5;
+function _playMus(){ _mus.play().catch(()=>{}); document.removeEventListener('click',_playMus); document.removeEventListener('touchstart',_playMus); }
+document.addEventListener('click', _playMus);
+document.addEventListener('touchstart', _playMus, {passive:true});
 </script>
 
 </body>
