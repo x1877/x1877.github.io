@@ -50,6 +50,21 @@ body.light #themeBtn { background:#ede8dc; border-color:#c9a84c; }
 #langBtn:hover { border-color:#c9a84c; box-shadow:0 0 16px rgba(201,168,76,0.25); }
 body.light #langBtn { background:#ede8dc; border-color:#c9a84c; }
 
+/* ── MUSIC BUTTON ── */
+#musicBtn {
+  position:fixed; top:16px; right:108px; z-index:9997;
+  width:38px; height:38px; border-radius:50%;
+  background:#0e0e0e; border:1px solid #2a2010;
+  display:flex; align-items:center; justify-content:center;
+  transition:all .3s; font-size:1.05rem;
+  box-shadow:0 2px 12px rgba(0,0,0,0.4);
+}
+#musicBtn:hover { border-color:#c9a84c; box-shadow:0 0 16px rgba(201,168,76,0.25); }
+#musicBtn.playing { animation:musicPulse 1.6s ease-in-out infinite; }
+@keyframes musicPulse { 0%,100%{box-shadow:0 0 8px rgba(201,168,76,0.15);} 50%{box-shadow:0 0 18px rgba(201,168,76,0.5);} }
+body.light #musicBtn { background:#ede8dc; border-color:#c9a84c; }
+
+
 
 body[dir="rtl"] .card { direction:rtl; }
 body[dir="rtl"] .lb, body[dir="rtl"] .chat-send-btn { flex-direction:row-reverse; }
@@ -422,6 +437,7 @@ animation:crownFloat 3s ease infinite;
 </head>
 <body>
 <div id="scrollBar"></div>
+<button id="musicBtn" title="Music">🎵</button>
 <button id="themeBtn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
 <button id="langBtn" onclick="toggleLang()" title="Toggle language">EN</button>
 <canvas id="c"></canvas>
@@ -781,8 +797,22 @@ const stars=Array.from({length:100},()=>({x:Math.random()*window.innerWidth,y:Ma
 
 // Music
 const bgMusic=document.getElementById("bgMusic");bgMusic.volume=0.4;
-function tryPlay(){bgMusic.play().catch(()=>{});}tryPlay();
+function tryPlay(){bgMusic.play().then(()=>_setMusicBtn(true)).catch(()=>_setMusicBtn(false));}tryPlay();
 document.addEventListener('click',tryPlay,{once:true});document.addEventListener('touchstart',tryPlay,{once:true});
+
+const musicBtn=document.getElementById('musicBtn');
+function _setMusicBtn(playing){
+  if(!musicBtn)return;
+  musicBtn.textContent = playing ? '🎶' : '🎵';
+  musicBtn.classList.toggle('playing', playing);
+}
+if(musicBtn){
+  musicBtn.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    if(bgMusic.paused){ bgMusic.play().then(()=>_setMusicBtn(true)).catch(()=>_setMusicBtn(false)); }
+    else { bgMusic.pause(); _setMusicBtn(false); }
+  });
+}
 
 // Floating code
 (function(){const layer=document.getElementById('codeLayer');const snippets=['def orbit(planet, t):','import space','git commit -m "🚀"','while alive: code()','ssh x1877@universe','SELECT * FROM stars','npm run deploy','curl -X POST /hack','chmod 777 life.sh','x1877 = lambda: 1337','ping 0.0.0.0','sudo rm -rf boring/','for soul in matrix:','{ "dev": "x1877" }','const me = "x1877"','> access granted ✓','fork() → exec(dream)'];function spawn(){const el=document.createElement('div');el.className='code-float';el.textContent=snippets[Math.floor(Math.random()*snippets.length)];el.style.left=(Math.random()*95)+'%';el.style.fontSize=(Math.random()*0.3+0.55)+'rem';const dur=Math.random()*18+12;el.style.animationDuration=dur+'s';el.style.animationDelay=(Math.random()*-dur)+'s';layer.appendChild(el);setTimeout(()=>el.remove(),(dur+1)*1000);}for(let i=0;i<18;i++)spawn();setInterval(spawn,2200);})();
