@@ -49,6 +49,8 @@ body.light #themeBtn { background:#ede8dc; border-color:#c9a84c; }
 }
 #langBtn:hover { border-color:#c9a84c; box-shadow:0 0 16px rgba(201,168,76,0.25); }
 body.light #langBtn { background:#ede8dc; border-color:#c9a84c; }
+
+
 body[dir="rtl"] .card { direction:rtl; }
 body[dir="rtl"] .lb, body[dir="rtl"] .chat-send-btn { flex-direction:row-reverse; }
 body[dir="rtl"] .lb:hover, body[dir="rtl"] .chat-send-btn:hover { transform:translateX(-3px); box-shadow:3px 0 0 #c9a84c; }
@@ -435,20 +437,10 @@ animation:crownFloat 3s ease infinite;
   <div class="orn">— ✦ —</div>
   <div class="div"></div>
   <div class="sec"></div>
-  <div class="vbox">
-    <video id="vid" loop muted playsinline webkit-playsinline preload="auto">
-      <source src="https://github.com/x1877/x1877.github.io/raw/refs/heads/main/4642065665316754343.mp4" type="video/mp4">
-    </video>
-  </div>
   <div class="sec" data-i18n="sec-media">◈ Media</div>
   <div class="vbox">
     <video controls playsinline webkit-playsinline preload="metadata">
       <source src="https://github.com/x1877/x1877.github.io/raw/refs/heads/main/2691146311968715241.mp4" type="video/mp4">
-    </video>
-  </div>
-  <div class="vbox">
-    <video controls playsinline webkit-playsinline preload="metadata">
-      <source src="https://github.com/x1877/x1877.github.io/raw/refs/heads/main/-64315890293335430.mp4" type="video/mp4">
     </video>
   </div>
   <div class="sec" data-i18n="sec-certs">◈ Certificates &amp; Skills</div>
@@ -786,11 +778,6 @@ function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeigh
 resize();window.addEventListener('resize',resize);
 const stars=Array.from({length:100},()=>({x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,r:Math.random()*1.2+0.2,a:Math.random(),sp:Math.random()*0.3+0.08,dr:(Math.random()-0.5)*0.2,ts:Math.random()*0.015+0.004,td:Math.random()>0.5?1:-1,gold:Math.random()>0.6}));
 (function loop(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;stars.forEach(s=>{s.a+=s.ts*s.td;if(s.a>=1){s.a=1;s.td=-1;}if(s.a<=0.05){s.a=0.05;s.td=1;}s.y-=s.sp;s.x+=s.dr;if(s.y<-4){s.y=window.innerHeight+4;s.x=Math.random()*window.innerWidth;}if(s.x<-4)s.x=window.innerWidth;if(s.x>window.innerWidth+4)s.x=0;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);if(s.gold){ctx.shadowColor='rgba(201,168,76,0.8)';ctx.shadowBlur=4;ctx.fillStyle=`rgba(201,168,76,${s.a})`;}else{ctx.shadowBlur=0;ctx.fillStyle=`rgba(230,220,190,${s.a*0.6})`;}ctx.fill();ctx.shadowBlur=0;});requestAnimationFrame(loop);})();
-
-// Video
-const vid=document.getElementById('vid');vid.play().catch(()=>{});
-document.addEventListener('touchstart',()=>vid.play(),{once:true});
-vid.addEventListener('click',()=>vid.paused?vid.play():vid.pause());
 
 // Music
 const bgMusic=document.getElementById("bgMusic");bgMusic.volume=0.4;
@@ -1209,25 +1196,7 @@ window.switchSnippet=switchSnippet;
 
 document.getElementById('chatModal').addEventListener('click',function(e){if(e.target===this)closeChatModal();});
 
-// ── Music: try autoplay immediately, fallback to first interaction ──
-const _mus = new Audio('https://cdn.jsdelivr.net/gh/x1877/x1877.github.io@main/8489120397.mp3');
-_mus.addEventListener('error', function _fallbackOnce(){
-  _mus.removeEventListener('error', _fallbackOnce);
-  _mus.src = 'https://github.com/x1877/x1877.github.io/raw/refs/heads/main/8489120397.mp3';
-  _mus.load();
-  _mus.play().catch(_armFallback);
-}, {once:true});
-_mus.loop = true;
-_mus.volume = 0.5;
-_mus.preload = 'auto';
-function _playMus(){
-  _mus.play().catch(()=>{});
-}
-function _armFallback(){
-  document.addEventListener('click', _playMus, {once:true});
-  document.addEventListener('touchstart', _playMus, {once:true, passive:true});
-}
-_mus.play().then(()=>{}).catch(_armFallback);
+
 </script>
 
 </body>
