@@ -209,6 +209,40 @@ body { display:flex; justify-content:center; padding:36px 16px 70px; }
 .modal-close { position:absolute; top:14px; right:16px; background:none; border:none; color:#6b6050; font-size:1.2rem; cursor:pointer; }
 .modal-close:hover { color:#c9a84c; }
 .success-msg { display:none; text-align:center; padding:10px 0; font-size:.8rem; color:#c9a84c; letter-spacing:.1em; }
+.name-input {
+  width:100%; background:#151515; border:1px solid #2a2a1a; border-radius:10px;
+  color:#e8e0cc; font-family:'Raleway',sans-serif; font-size:.85rem; padding:12px;
+  outline:none; transition:border .2s; margin-bottom:12px; box-sizing:border-box;
+}
+.name-input:focus { border-color:#7a5f2a; }
+.name-input::placeholder { color:#3a3028; }
+.file-drop {
+  display:flex; align-items:center; justify-content:center; width:100%; min-height:70px;
+  background:#151515; border:1.5px dashed #3a3020; border-radius:10px; cursor:pointer;
+  color:#8a7a5a; font-size:.78rem; text-align:center; padding:12px; transition:.2s; box-sizing:border-box;
+}
+.file-drop:active, .file-drop.picked { border-color:#c9a84c; color:#c9a84c; }
+.file-drop.picked { border-style:solid; animation:filePulse 2.2s ease-in-out infinite; }
+@keyframes filePulse { 0%,100%{box-shadow:0 0 6px rgba(201,168,76,0.1);} 50%{box-shadow:0 0 16px rgba(201,168,76,0.35);} }
+.file-hint { font-size:.62rem; color:#3a3028; text-align:center; margin:8px 0 14px; letter-spacing:.05em; }
+.file-hint.warn { color:#b05454; }
+
+.file-card { background:#0e0e0e; border:1px solid #1e1e12; border-radius:12px; padding:14px 16px; position:relative; animation:fadeUp .2s ease; }
+.file-card::before { content:'◈'; position:absolute; top:14px; left:16px; color:#7a5f2a; font-size:.7rem; }
+.file-card .msg-time { font-size:.6rem; color:#3a3028; letter-spacing:.1em; margin-bottom:6px; padding-inline-start:16px; }
+.file-card .file-meta { display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap; padding-inline-start:16px; }
+.file-card .file-sender { font-size:.8rem; color:#c9a84c; font-weight:700; }
+.file-card .file-name { font-size:.72rem; color:#8a7a5a; font-family:'Courier New',monospace; }
+.file-card .file-preview {
+  background:#060606; border-radius:8px; padding:10px; font-family:'Courier New',monospace;
+  font-size:.68rem; color:#d4c8a8; max-height:140px; overflow:auto; white-space:pre-wrap; word-break:break-word; margin-bottom:8px;
+}
+.file-card .file-actions { display:flex; gap:14px; }
+.file-card .file-actions span { font-size:.7rem; color:#7a5f2a; cursor:pointer; letter-spacing:.05em; }
+.file-card .file-actions span:active { color:#c9a84c; }
+.file-card .msg-del { position:absolute; top:10px; right:12px; background:none; border:none; color:#2a2018; font-size:.8rem; cursor:pointer; transition:color .2s; }
+.file-card .msg-del:hover { color:#8b3030; }
+.inbox-subhead { font-size:.65rem; color:#5a4f38; letter-spacing:.15em; margin:14px 0 8px; padding-inline-start:2px; }
 .secret-trigger { cursor:pointer; user-select:none; color:#7a5f2a; transition:color .2s; }
 .secret-trigger:hover { color:#c9a84c; }
 .inbox-overlay { display:none; position:fixed; inset:0; z-index:99999; background:rgba(0,0,0,0.97); backdrop-filter:blur(10px); flex-direction:column; }
@@ -414,6 +448,11 @@ animation:badgePulse 2s ease infinite;
   position:absolute; top:10px; right:12px; font-size:.55rem; color:#3a3028;
   letter-spacing:.12em; font-family:'Cinzel',serif;
 }
+.s-copy {
+  position:absolute; top:6px; left:10px; font-size:.85rem; opacity:.5;
+  cursor:pointer; z-index:2; padding:4px; transition:.2s;
+}
+.s-copy:active { opacity:1; transform:scale(0.9); }
 pre.s-code {
   margin:0; font-family:'Courier New',monospace; font-size:.68rem;
   line-height:1.8; overflow:hidden;
@@ -634,12 +673,14 @@ animation:crownFloat 3s ease infinite;
   <div class="snippets-section">
     <div class="snippet-tabs">
       <div class="s-tab active" onclick="switchSnippet('py',this)">Python</div>
+      <div class="s-tab" onclick="switchSnippet('php',this)">PHP</div>
       <div class="s-tab" onclick="switchSnippet('js',this)">JS</div>
       <div class="s-tab" onclick="switchSnippet('bash',this)">Bash</div>
     </div>
 
     <div class="snippet-box">
       <span class="s-lang-badge" id="sLangBadge">PY</span>
+      <span class="s-copy" onclick="copySnippet()" title="Copy code">📋</span>
 
       <div class="snippet-panel active" id="snip-py">
 <pre class="s-code"><span class="cm"># port scanner by x1877</span>
@@ -656,6 +697,25 @@ animation:crownFloat 3s ease infinite;
 <span class="kw">for</span> <span class="def">p</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, <span class="num">1025</span>):
     <span class="fn">threading.Thread</span>(<span class="def">target=scan,
         args=(</span><span class="str">"target"</span><span class="def">, p)</span>).<span class="fn">start</span>()</pre>
+      </div>
+
+      <div class="snippet-panel" id="snip-php">
+<pre class="s-code"><span class="cm">// secure password hash — x1877</span>
+<span class="kw">function</span> <span class="fn">hashPassword</span>(<span class="def">$plain</span>) {
+    <span class="kw">return</span> <span class="fn">password_hash</span>(
+        <span class="def">$plain</span>,
+        <span class="def">PASSWORD_BCRYPT</span>,
+        [<span class="str">'cost'</span> => <span class="num">12</span>]
+    );
+}
+
+<span class="def">$hash</span> = <span class="fn">hashPassword</span>(<span class="str">'x1877_secret'</span>);
+
+<span class="kw">if</span> (<span class="fn">password_verify</span>(<span class="def">$_POST</span>[<span class="str">'pw'</span>], <span class="def">$hash</span>)) {
+    <span class="fn">echo</span> <span class="str">"[✓] access granted"</span>;
+} <span class="kw">else</span> {
+    <span class="fn">http_response_code</span>(<span class="num">401</span>);
+}</pre>
       </div>
 
       <div class="snippet-panel" id="snip-js">
@@ -705,6 +765,15 @@ animation:crownFloat 3s ease infinite;
       <div class="lt"><span class="ll" data-i18n="anon-label">Anonymous</span><span class="lv" data-i18n="anon-desc"> you can send anonymous message 🔒</span></div>
       <span class="la">›</span>
     </div>
+    <div class="chat-send-btn" onclick="openFileModal()">
+      <div class="li chat-icon">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="rgba(201,168,76,0.9)" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-6 4h6m1 4H8a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+      </div>
+      <div class="lt"><span class="ll" data-i18n="file-label">Send a file</span><span class="lv" data-i18n="file-desc"> .txt / .py / .php / code 📎</span></div>
+      <span class="la">›</span>
+    </div>
     <a href="https://instagram.com/197.1.1" target="_blank" class="lb">
       <div class="li ig"><svg width="18" height="18" fill="white" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></div>
       <div class="lt"><span class="ll">Instagram</span><span class="lv">@197.1.1</span></div>
@@ -743,6 +812,24 @@ animation:crownFloat 3s ease infinite;
   </div>
 </div>
 
+<!-- FILE SEND MODAL -->
+
+<div class="modal-overlay" id="fileModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeFileModal()">✕</button>
+    <div class="modal-title">📎 إرسال ملف / كود</div>
+    <div class="modal-sub">.txt · .py · .php · .js · أي كود برمجي</div>
+    <input type="text" class="name-input" id="fileSenderName" placeholder="اسمك" maxlength="40"/>
+    <label class="file-drop" id="fileDropLabel" for="fileInput">
+      <span id="fileDropText">◈ اضغط لاختيار ملف</span>
+    </label>
+    <input type="file" id="fileInput" accept=".txt,.py,.php,.js,.jsx,.ts,.tsx,.html,.css,.json,.c,.cpp,.h,.java,.rb,.go,.sh,.sql,.md,.xml,.yml,.yaml" onchange="handleFilePick()" style="display:none;"/>
+    <div class="file-hint" id="fileHint">حد أقصى 500KB · ملفات نصية/كود بس</div>
+    <button class="send-btn" id="fileSendBtn" onclick="sendFile()">إرسال ✦</button>
+    <div class="success-msg" id="fileSuccessMsg">✦ تم الإرسال بنجاح ✦</div>
+  </div>
+</div>
+
 <!-- INBOX -->
 
 <div class="inbox-overlay" id="inboxPanel">
@@ -759,6 +846,9 @@ animation:crownFloat 3s ease infinite;
   <div class="inbox-body" id="inboxBody" style="display:none;">
     <div class="empty-inbox" id="emptyNotice" style="display:none;">◈ لا توجد رسائل بعد</div>
     <div class="loading-spinner" id="loadingSpinner">◈ جاري التحميل...</div>
+    <div class="inbox-subhead" id="filesSubhead" style="display:none;">◈ ملفات مرسلة</div>
+    <div class="empty-inbox" id="emptyFilesNotice" style="display:none;">◈ لا توجد ملفات بعد</div>
+    <div class="loading-spinner" id="loadingFilesSpinner" style="display:none;">◈ جاري تحميل الملفات...</div>
   </div>
   <div class="inbox-actions" id="inboxActions" style="display:none;">
     <button class="clear-all-btn" onclick="clearAllMessages()">◈ حذف الكل</button>
@@ -802,6 +892,8 @@ window.dispatchEvent(new Event('firebaseReady'));
 
 <script>
 const COLLECTION = "messages";
+const FILES_COLLECTION = "file_submissions";
+const MAX_FILE_SIZE = 500 * 1024;
 const SECRET_PIN = "313"; // ← غيّر الرمز هنا
 let pinPassed = false;
 
@@ -831,7 +923,14 @@ function copyText(txt, e){
     document.body.removeChild(ta); done();
   }
 }
+function copySnippet(){
+  const active = document.querySelector('.snippet-panel.active .s-code');
+  if(!active) return;
+  copyText(active.textContent, null);
+}
 window.copyText = copyText;
+window.copySnippet = copySnippet;
+
 
 const bgMusic=document.getElementById("bgMusic");bgMusic.volume=0.4;
 function tryPlay(){bgMusic.play().then(()=>_setMusicBtn(true)).catch(()=>_setMusicBtn(false));}tryPlay();
@@ -878,11 +977,88 @@ async function sendMessage(){
 }
 window.sendMessage=sendMessage;
 
+// File send modal
+let _pickedFile = null;
+function openFileModal(){document.getElementById('fileModal').classList.add('open');}
+window.openFileModal=openFileModal;
+function closeFileModal(){
+  document.getElementById('fileModal').classList.remove('open');
+  document.getElementById('fileSenderName').value='';
+  document.getElementById('fileInput').value='';
+  document.getElementById('fileDropText').textContent='◈ اضغط لاختيار ملف';
+  document.getElementById('fileDropLabel').classList.remove('picked');
+  document.getElementById('fileHint').textContent='حد أقصى 500KB · ملفات نصية/كود بس';
+  document.getElementById('fileHint').classList.remove('warn');
+  _pickedFile=null;
+  const b=document.getElementById('fileSendBtn');b.style.display='block';b.disabled=false;b.textContent='إرسال ✦';
+  document.getElementById('fileSuccessMsg').style.display='none';
+}
+window.closeFileModal=closeFileModal;
+
+function getFileEmoji(name){
+  const ext=(name||'').split('.').pop().toLowerCase();
+  const map={py:'🐍',php:'🐘',js:'📜',jsx:'📜',ts:'📘',tsx:'📘',html:'🌐',css:'🎨',json:'🗃️',c:'⚙️',cpp:'⚙️',h:'⚙️',java:'☕',rb:'💎',go:'🐹',sh:'💻',sql:'🗄️',md:'📝',xml:'📰',yml:'⚓',yaml:'⚓',txt:'📄'};
+  return map[ext]||'📎';
+}
+window.getFileEmoji=getFileEmoji;
+
+function handleFilePick(){
+  const input=document.getElementById('fileInput');
+  const hint=document.getElementById('fileHint');
+  const label=document.getElementById('fileDropLabel');
+  const dropText=document.getElementById('fileDropText');
+  const file=input.files[0];
+  _pickedFile=null;
+  if(!file)return;
+  if(file.size>MAX_FILE_SIZE){
+    hint.textContent='✕ الملف أكبر من 500KB، اختر ملف أصغر';
+    hint.classList.add('warn');
+    label.classList.remove('picked');
+    input.value='';
+    return;
+  }
+  const reader=new FileReader();
+  reader.onload=()=>{
+    _pickedFile={name:file.name,content:reader.result,size:file.size};
+    dropText.textContent=getFileEmoji(file.name)+' '+file.name+'  ·  '+Math.max(1,Math.round(file.size/1024))+'KB';
+    label.classList.add('picked');
+    hint.textContent='حد أقصى 500KB · ملفات نصية/كود بس';
+    hint.classList.remove('warn');
+  };
+  reader.onerror=()=>{
+    hint.textContent='✕ ما قدرت اقرأ الملف';
+    hint.classList.add('warn');
+  };
+  reader.readAsText(file);
+}
+window.handleFilePick=handleFilePick;
+
+async function sendFile(){
+  const name=document.getElementById('fileSenderName').value.trim();
+  const hint=document.getElementById('fileHint');
+  if(!name){hint.textContent='✕ اكتب اسمك أول';hint.classList.add('warn');return;}
+  if(!_pickedFile){hint.textContent='✕ اختر ملف أول';hint.classList.add('warn');return;}
+  if(!window._firebaseReady){alert('جاري الاتصال، انتظر ثانية');return;}
+  const btn=document.getElementById('fileSendBtn');btn.disabled=true;btn.textContent='...';
+  try{
+    const fb=window._fb;
+    await fb.addDoc(fb.collection(fb.db,FILES_COLLECTION),{
+      senderName:name, fileName:_pickedFile.name, content:_pickedFile.content,
+      size:_pickedFile.size, time:new Date().toISOString(), ts:fb.serverTimestamp()
+    });
+    btn.style.display='none';document.getElementById('fileSuccessMsg').style.display='block';
+    launchConfetti();
+    setTimeout(closeFileModal,1800);
+  }catch(e){btn.disabled=false;btn.textContent='إرسال ✦';alert('خطأ في الإرسال');}
+}
+window.sendFile=sendFile;
+
+
 // Inbox
 function openInbox(){
   document.getElementById('inboxPanel').classList.add('open');
   if(!pinPassed){document.getElementById('pinScreen').style.display='flex';document.getElementById('inboxBody').style.display='none';document.getElementById('inboxActions').style.display='none';setTimeout(()=>document.getElementById('pinInput').focus(),100);}
-  else renderMessages();
+  else {renderMessages();renderFiles();}
 }
 window.openInbox=openInbox;
 function closeInbox(){document.getElementById('inboxPanel').classList.remove('open');document.getElementById('pinInput').value='';document.getElementById('pinError').style.display='none';}
@@ -894,6 +1070,7 @@ function checkPin(){
     document.getElementById('inboxBody').style.display='flex';
     document.getElementById('inboxActions').style.display='flex';
     renderMessages();
+    renderFiles();
   }else{
     document.getElementById('pinError').style.display='block';
     document.getElementById('pinInput').value='';
@@ -935,12 +1112,76 @@ async function deleteMessage(id){
 }
 window.deleteMessage=deleteMessage;
 
+async function renderFiles(){
+  if(!window._firebaseReady){setTimeout(renderFiles,500);return;}
+  const body=document.getElementById('inboxBody');
+  const spinner=document.getElementById('loadingFilesSpinner');
+  const empty=document.getElementById('emptyFilesNotice');
+  const subhead=document.getElementById('filesSubhead');
+  subhead.style.display='block';
+  spinner.style.display='block';empty.style.display='none';
+  Array.from(body.querySelectorAll('.file-card')).forEach(el=>el.remove());
+  try{
+    const fb=window._fb;
+    const q=fb.query(fb.collection(fb.db,FILES_COLLECTION),fb.orderBy('ts','desc'));
+    const snap=await fb.getDocs(q);
+    spinner.style.display='none';
+    if(snap.empty){empty.style.display='block';return;}
+    snap.forEach(d=>{
+      const m=d.data();
+      _fileCache[d.id]={name:m.fileName||'file.txt',content:m.content||''};
+      const card=document.createElement('div');card.className='file-card';
+      const t=m.time?new Date(m.time).toLocaleString('ar-IQ'):'—';
+      const kb=m.size?Math.max(1,Math.round(m.size/1024)):'?';
+      card.innerHTML=`<div class="msg-time">${t}</div>
+        <div class="file-meta"><span class="file-sender">${escapeHtml(m.senderName||'—')}</span><span class="file-name">${getFileEmoji(m.fileName)} ${escapeHtml(m.fileName||'file.txt')} · ${kb}KB</span></div>
+        <div class="file-preview">${escapeHtml((m.content||'').slice(0,2000))}</div>
+        <div class="file-actions">
+          <span onclick="copyFileById('${d.id}')">نسخ 📋</span>
+          <span onclick="downloadFileById('${d.id}')">تحميل ⬇</span>
+        </div>
+        <button class="msg-del" onclick="deleteFile('${d.id}')">✕</button>`;
+      body.appendChild(card);
+    });
+  }catch(e){spinner.style.display='none';empty.textContent='◈ خطأ في التحميل';empty.style.display='block';}
+}
+
+const _fileCache={};
+function copyFileById(id){ const f=_fileCache[id]; if(f) copyText(f.content,null); }
+window.copyFileById=copyFileById;
+function downloadFileById(id){ const f=_fileCache[id]; if(f) downloadFile(f.name,f.content); }
+window.downloadFileById=downloadFileById;
+
+function downloadFile(name, content){
+  const blob=new Blob([content],{type:'text/plain'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=name||'file.txt';
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),2000);
+}
+window.downloadFile=downloadFile;
+
+async function deleteFile(id){
+  if(!window._firebaseReady)return;
+  const fb=window._fb;
+  await fb.deleteDoc(fb.doc(fb.db,FILES_COLLECTION,id));
+  renderFiles();
+}
+window.deleteFile=deleteFile;
+
+
+
 async function clearAllMessages(){
-  if(!confirm('حذف كل الرسائل؟'))return;
+  if(!confirm('حذف كل الرسائل والملفات؟'))return;
   const fb=window._fb;
   const snap=await fb.getDocs(fb.collection(fb.db,COLLECTION));
   await Promise.all(snap.docs.map(d=>fb.deleteDoc(fb.doc(fb.db,COLLECTION,d.id))));
+  const fsnap=await fb.getDocs(fb.collection(fb.db,FILES_COLLECTION));
+  await Promise.all(fsnap.docs.map(d=>fb.deleteDoc(fb.doc(fb.db,FILES_COLLECTION,d.id))));
   renderMessages();
+  renderFiles();
 }
 window.clearAllMessages=clearAllMessages;
 
@@ -960,6 +1201,8 @@ const translations = {
     'stat-langs':   'Langs',
     'anon-label':   'Anonymous',
     'anon-desc':    ' you can send anonymous message 🔒',
+    'file-label':   'Send a file',
+    'file-desc':    ' .txt / .py / .php / code 📎',
     'cert-py-title':'Python Development',
     'cert-py-sub':  'Advanced · Scripting & Automation',
     'cert-php-title':'PHP Development',
@@ -1004,6 +1247,8 @@ const translations = {
     'stat-langs':   'لغات',
     'anon-label':   'مجهول',
     'anon-desc':    ' أرسل رسالة مجهولة 🔒',
+    'file-label':   'إرسال ملف',
+    'file-desc':    ' .txt / .py / .php / كود 📎',
     'cert-py-title':'تطوير بايثون',
     'cert-py-sub':  'متقدم · سكريبتات وأتمتة',
     'cert-php-title':'تطوير PHP',
@@ -1289,7 +1534,7 @@ function switchSnippet(lang,tab){
   document.querySelectorAll('.s-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('snip-'+lang).classList.add('active');
   tab.classList.add('active');
-  const badges={py:'PY',js:'JS',bash:'SH'};
+  const badges={py:'PY',php:'PHP',js:'JS',bash:'SH'};
   document.getElementById('sLangBadge').textContent=badges[lang]||lang.toUpperCase();
 }
 window.switchSnippet=switchSnippet;
