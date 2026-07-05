@@ -50,7 +50,17 @@ body.light #themeBtn { background:#ede8dc; border-color:#c9a84c; }
 #langBtn:hover { border-color:#c9a84c; box-shadow:0 0 16px rgba(201,168,76,0.25); }
 body.light #langBtn { background:#ede8dc; border-color:#c9a84c; }
 
-/* ── MUSIC BUTTON ── */
+/* ── COPY BUTTON + TOAST ── */
+.lc { font-size:.9rem; opacity:.55; padding:6px; margin-inline-end:2px; transition:.2s; }
+.lc:active { opacity:1; transform:scale(0.9); }
+#copyToast {
+  position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(20px);
+  background:#c9a84c; color:#0c0c0c; font-weight:700; font-size:.85rem;
+  padding:10px 18px; border-radius:30px; z-index:99999; opacity:0; pointer-events:none;
+  transition:opacity .25s, transform .25s; box-shadow:0 4px 20px rgba(0,0,0,0.4);
+}
+#copyToast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
 #musicBtn {
   position:fixed; top:16px; right:108px; z-index:9997;
   width:38px; height:38px; border-radius:50%;
@@ -697,17 +707,24 @@ animation:crownFloat 3s ease infinite;
     </div>
     <a href="https://instagram.com/197.1.1" target="_blank" class="lb">
       <div class="li ig"><svg width="18" height="18" fill="white" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></div>
-      <div class="lt"><span class="ll">Instagram</span><span class="lv">@197.1.1</span></div><span class="la">›</span>
+      <div class="lt"><span class="ll">Instagram</span><span class="lv">@197.1.1</span></div>
+      <span class="lc" onclick="copyText('@197.1.1',event)" title="Copy">📋</span>
+      <span class="la">›</span>
     </a>
     <a href="https://t.me/x1877" target="_blank" class="lb">
       <div class="li tg"><svg width="18" height="18" fill="white" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg></div>
-      <div class="lt"><span class="ll">Telegram</span><span class="lv">@x1877</span></div><span class="la">›</span>
+      <div class="lt"><span class="ll">Telegram</span><span class="lv">@x1877</span></div>
+      <span class="lc" onclick="copyText('@x1877',event)" title="Copy">📋</span>
+      <span class="la">›</span>
     </a>
     <a href="https://github.com/x1877" target="_blank" class="lb">
       <div class="li gh"><svg width="18" height="18" fill="white" viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></div>
-      <div class="lt"><span class="ll">GitHub</span><span class="lv">x1877</span></div><span class="la">›</span>
+      <div class="lt"><span class="ll">GitHub</span><span class="lv">x1877</span></div>
+      <span class="lc" onclick="copyText('x1877',event)" title="Copy">📋</span>
+      <span class="la">›</span>
     </a>
   </div>
+  <div id="copyToast">Copied ✓</div>
   <div class="div"></div>
   <div class="footer"> · <b class="secret-trigger" onclick="openInbox()">X1877 · </b></div>
 </div>
@@ -765,7 +782,7 @@ animation:crownFloat 3s ease infinite;
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, serverTimestamp }
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, serverTimestamp, setDoc, onSnapshot, increment }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const app = initializeApp({
@@ -778,7 +795,7 @@ const app = initializeApp({
 });
 const db = getFirestore(app);
 
-window._fb = { db, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, serverTimestamp };
+window._fb = { db, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, serverTimestamp, setDoc, onSnapshot, increment };
 window._firebaseReady = true;
 window.dispatchEvent(new Event('firebaseReady'));
 </script>
@@ -795,7 +812,27 @@ resize();window.addEventListener('resize',resize);
 const stars=Array.from({length:100},()=>({x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,r:Math.random()*1.2+0.2,a:Math.random(),sp:Math.random()*0.3+0.08,dr:(Math.random()-0.5)*0.2,ts:Math.random()*0.015+0.004,td:Math.random()>0.5?1:-1,gold:Math.random()>0.6}));
 (function loop(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;stars.forEach(s=>{s.a+=s.ts*s.td;if(s.a>=1){s.a=1;s.td=-1;}if(s.a<=0.05){s.a=0.05;s.td=1;}s.y-=s.sp;s.x+=s.dr;if(s.y<-4){s.y=window.innerHeight+4;s.x=Math.random()*window.innerWidth;}if(s.x<-4)s.x=window.innerWidth;if(s.x>window.innerWidth+4)s.x=0;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);if(s.gold){ctx.shadowColor='rgba(201,168,76,0.8)';ctx.shadowBlur=4;ctx.fillStyle=`rgba(201,168,76,${s.a})`;}else{ctx.shadowBlur=0;ctx.fillStyle=`rgba(230,220,190,${s.a*0.6})`;}ctx.fill();ctx.shadowBlur=0;});requestAnimationFrame(loop);})();
 
-// Music
+// ── Copy to clipboard ──
+function copyText(txt, e){
+  if(e){ e.preventDefault(); e.stopPropagation(); }
+  const done = () => {
+    const t = document.getElementById('copyToast');
+    if(!t) return;
+    t.classList.add('show');
+    clearTimeout(window._toastT);
+    window._toastT = setTimeout(()=>t.classList.remove('show'), 1400);
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(done).catch(done);
+  } else {
+    const ta=document.createElement('textarea');
+    ta.value=txt; document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); }catch(err){}
+    document.body.removeChild(ta); done();
+  }
+}
+window.copyText = copyText;
+
 const bgMusic=document.getElementById("bgMusic");bgMusic.volume=0.4;
 function tryPlay(){bgMusic.play().then(()=>_setMusicBtn(true)).catch(()=>_setMusicBtn(false));}tryPlay();
 document.addEventListener('click',tryPlay,{once:true});document.addEventListener('touchstart',tryPlay,{once:true});
@@ -951,7 +988,7 @@ const translations = {
     'empty-inbox':  '◈ No messages yet',
     'loading':      '◈ Loading...',
     'clear-all':    '◈ Clear All',
-    'bio-lines':    ['Dark · web · 19 👑','Python · PHP · JS 💻','Security Researcher 🔐','Top Hacker 2021 🏆'],
+    'bio-lines':    ['Dark · web · 20 👑','Python · PHP · JS 💻','Security Researcher 🔐','Top Hacker 2021 🏆'],
   },
   ar: {
     'sec-certs':    '◈ الشهادات والمهارات',
@@ -995,7 +1032,7 @@ const translations = {
     'empty-inbox':  '◈ لا توجد رسائل بعد',
     'loading':      '◈ جاري التحميل...',
     'clear-all':    '◈ حذف الكل',
-    'bio-lines':    ['داك · ويب · 19 👑','بايثون · PHP · JS 💻','باحث أمني 🔐','أفضل هاكر 2021 🏆'],
+    'bio-lines':    ['داك · ويب · 20 👑','بايثون · PHP · JS 💻','باحث أمني 🔐','أفضل هاكر 2021 🏆'],
   }
 };
 
@@ -1105,24 +1142,57 @@ function launchConfetti() {
 }
 window.addEventListener('load', () => setTimeout(launchConfetti, 300));
 
-// ── Visitor Counter (Firebase) ──
+// ── Visitor Counter (Firebase — real) ──
 async function initVisitor() {
   if (!window._firebaseReady) { setTimeout(initVisitor, 500); return; }
   const fb = window._fb;
-  const ref = fb.doc(fb.db, 'meta', 'visitors');
+  const visitorsRef = fb.doc(fb.db, 'meta', 'visitors');
+
+  // Count this browser once per session (real cumulative total)
+  if (!sessionStorage.getItem('x1877_counted')) {
+    sessionStorage.setItem('x1877_counted', '1');
+    try { await fb.setDoc(visitorsRef, { count: fb.increment(1) }, { merge: true }); } catch(e){}
+  }
+
+  // Live total, updates for everyone viewing the page right now
   try {
-    const snap = await fb.getDocs(fb.collection(fb.db, 'meta'));
-    let count = 1337;
-    snap.forEach(d => { if (d.id === 'visitors' && d.data().count) count = d.data().count; });
-    // increment
-    const newCount = count + 1;
-    await fb.addDoc || true; // just read, no write needed for display
-    document.getElementById('visitorNum').textContent = newCount.toLocaleString();
-    // fake online count 1-5
-    document.getElementById('onlineNum').textContent = Math.floor(Math.random()*4)+1;
+    fb.onSnapshot(visitorsRef, (snap) => {
+      const el = document.getElementById('visitorNum');
+      if (el) el.textContent = (snap.exists() ? (snap.data().count || 0) : 0).toLocaleString();
+    });
   } catch(e) {
-    // fallback nice number
-    document.getElementById('visitorNum').textContent = (1337 + Math.floor(Math.random()*200)).toLocaleString();
+    const el = document.getElementById('visitorNum');
+    if (el) el.textContent = '—';
+  }
+
+  // Real "online now" via heartbeat presence docs
+  const sid = sessionStorage.getItem('x1877_sid') || (Date.now().toString(36) + Math.random().toString(36).slice(2));
+  sessionStorage.setItem('x1877_sid', sid);
+  const presenceRef = fb.doc(fb.db, 'presence', sid);
+  const beat = () => fb.setDoc(presenceRef, { lastSeen: fb.serverTimestamp() }).catch(()=>{});
+  beat();
+  setInterval(beat, 20000);
+
+  let presenceTimes = [];
+  function recomputeOnline(){
+    const cutoff = Date.now() - 45000;
+    const n = presenceTimes.filter(t => t > cutoff).length;
+    const el = document.getElementById('onlineNum');
+    if (el) el.textContent = Math.max(n, 1);
+  }
+  try {
+    fb.onSnapshot(fb.collection(fb.db, 'presence'), (snap) => {
+      presenceTimes = [];
+      snap.forEach(d => {
+        const ls = d.data().lastSeen;
+        presenceTimes.push(ls && ls.toMillis ? ls.toMillis() : 0);
+      });
+      recomputeOnline();
+    });
+    setInterval(recomputeOnline, 10000);
+  } catch(e) {
+    const el = document.getElementById('onlineNum');
+    if (el) el.textContent = '1';
   }
 }
 initVisitor();
@@ -1149,7 +1219,7 @@ window.toggleTheme=toggleTheme;
 if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.getElementById('themeBtn').textContent='☀️';}
 
 // ── Typewriter Bio ──
-let bioLines=['Dark · web · 19 👑','Python · PHP · JS 💻','Security Researcher 🔐','Top Hacker 2021 🏆'];
+let bioLines=['Dark · web · 20 👑','Python · PHP · JS 💻','Security Researcher 🔐','Top Hacker 2021 🏆'];
 let bLine=0,bChar=0,bDir=1;
 function typeBio(){
   const el=document.getElementById('bioText');
