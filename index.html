@@ -933,7 +933,7 @@ const COLLECTION = "messages";
 const FILES_COLLECTION = "file_submissions";
 const PUBLIC_FILES_COLLECTION = "public_files";
 const MAX_FILE_SIZE = 500 * 1024;
-const MAX_PUBLIC_FILE_SIZE = 20 * 1024 * 1024;
+const MAX_PUBLIC_FILE_SIZE = 700 * 1024;
 const SECRET_PIN = "313"; // ← غيّر الرمز هنا
 let pinPassed = false;
 
@@ -1213,6 +1213,7 @@ async function deleteFile(id){
 window.deleteFile=deleteFile;
 
 // ── Public Files (owner uploads → everyone sees on the page) ──
+// Stored directly in Firestore as base64 — works on the free Spark plan, no Storage/Blaze needed.
 let _pubPickedFile=null;
 
 function handlePubFilePick(){
@@ -1224,17 +1225,22 @@ function handlePubFilePick(){
   _pubPickedFile=null;
   if(!file)return;
   if(file.size>MAX_PUBLIC_FILE_SIZE){
-    hint.textContent='✕ الملف أكبر من 20MB';
+    hint.textContent='✕ الملف أكبر من 700KB';
     hint.classList.add('warn');
     label.classList.remove('picked');
     input.value='';
     return;
   }
-  _pubPickedFile=file;
-  dropText.textContent=getFileEmoji(file.name)+' '+file.name+'  ·  '+Math.max(1,Math.round(file.size/1024))+'KB';
-  label.classList.add('picked');
-  hint.textContent='يظهر للجميع بقسم Downloads بالموقع';
-  hint.classList.remove('warn');
+  const reader=new FileReader();
+  reader.onload=()=>{
+    _pubPickedFile={name:file.name,size:file.size,dataUrl:reader.result};
+    dropText.textContent=getFileEmoji(file.name)+' '+file.name+'  ·  '+Math.max(1,Math.round(file.size/1024))+'KB';
+    label.classList.add('picked');
+    hint.textContent='يظهر للجميع بقسم Downloads بالموقع';
+    hint.classList.remove('warn');
+  };
+  reader.onerror=()=>{ hint.textContent='✕ ما قدرت اقرأ الملف'; hint.classList.add('warn'); };
+  reader.readAsDataURL(file);
 }
 window.handlePubFilePick=handlePubFilePick;
 
@@ -1247,12 +1253,8 @@ async function uploadPublicFile(){
   btn.disabled=true;btn.textContent='...';
   try{
     const fb=window._fb;
-    const path='public_files/'+Date.now()+'_'+_pubPickedFile.name;
-    const sref=fb.ref(fb.storage,path);
-    await fb.uploadBytes(sref,_pubPickedFile);
-    const url=await fb.getDownloadURL(sref);
     await fb.addDoc(fb.collection(fb.db,PUBLIC_FILES_COLLECTION),{
-      name:_pubPickedFile.name, url, path, caption, size:_pubPickedFile.size,
+      name:_pubPickedFile.name, dataUrl:_pubPickedFile.dataUrl, caption, size:_pubPickedFile.size,
       time:new Date().toISOString(), ts:fb.serverTimestamp()
     });
     hint.textContent='✦ تم الرفع بنجاح ✦';hint.classList.remove('warn');
@@ -1288,7 +1290,7 @@ async function loadPublicFiles(){
       const m=d.data();
       const kb=m.size?Math.max(1,Math.round(m.size/1024)):'?';
       const a=document.createElement('a');
-      a.className='pub-file'; a.href=m.url; a.target='_blank'; a.rel='noopener';
+      a.className='pub-file'; a.href=m.dataUrl; a.rel='noopener';
       a.download=m.name||'file';
       a.innerHTML=`<div class="li">${getFileEmoji(m.name)}</div>
         <div class="lt"><span class="ll">${escapeHtml(m.name||'file')}</span><span class="lv">${kb}KB${m.caption?' · '+escapeHtml(m.caption):''}</span></div>
@@ -1310,7 +1312,6 @@ async function renderOwnedFiles(){
     const snap=await fb.getDocs(q);
     snap.forEach(d=>{
       const m=d.data();
-      _pubFileCache[d.id]={path:m.path||''};
       const row=document.createElement('div');
       row.className='owned-file-row';
       row.innerHTML=`<span>${getFileEmoji(m.name)} ${escapeHtml(m.name||'file')}</span><button class="msg-del" onclick="deletePublicFile('${d.id}')">✕</button>`;
@@ -1320,12 +1321,9 @@ async function renderOwnedFiles(){
 }
 window.renderOwnedFiles=renderOwnedFiles;
 
-const _pubFileCache={};
 async function deletePublicFile(id){
   if(!confirm('حذف هذا الملف من Downloads؟'))return;
   const fb=window._fb;
-  const path=(_pubFileCache[id]||{}).path;
-  try{ if(path) await fb.deleteObject(fb.ref(fb.storage,path)); }catch(e){}
   await fb.deleteDoc(fb.doc(fb.db,PUBLIC_FILES_COLLECTION,id));
   loadPublicFiles();
   renderOwnedFiles();
