@@ -188,6 +188,15 @@ body { display:flex; justify-content:center; padding:36px 16px 70px; }
 .tg { background:#2AABEE; }
 .gh { background:#24292e; }
 .footer { font-size:.65rem; color:#6b6050; letter-spacing:.18em; text-transform:uppercase; margin-top:4px; }
+
+.public-files-list { display:flex; flex-direction:column; gap:10px; }
+.pub-file { display:flex; align-items:center; gap:12px; padding:12px 16px; border-radius:10px; background:#111; border:1px solid #222; color:#e8e0cc; text-decoration:none; transition:all .2s; }
+.pub-file:hover { border-color:#7a5f2a; transform:translateX(3px); box-shadow:-3px 0 0 #c9a84c; }
+.pub-file .li { background:#1a1608; font-size:1.1rem; }
+.pub-file .lt { flex:1; min-width:0; }
+.pub-file .lv { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pub-file .pf-cap { font-size:.68rem; color:#8a7a5a; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pub-file .la { font-size:.85rem; }
 .footer b { color:#7a5f2a; font-weight:400; }
 .chat-send-btn { width:100%; display:flex; align-items:center; gap:12px; padding:12px 16px; border-radius:10px; background:#111; border:1px solid #1a1a1a; color:#e8e0cc; cursor:pointer; transition:all .2s; margin-bottom:10px; }
 .chat-send-btn:hover { border-color:#7a5f2a; transform:translateX(3px); box-shadow:-3px 0 0 #c9a84c; }
@@ -243,6 +252,16 @@ body { display:flex; justify-content:center; padding:36px 16px 70px; }
 .file-card .msg-del { position:absolute; top:10px; right:12px; background:none; border:none; color:#2a2018; font-size:.8rem; cursor:pointer; transition:color .2s; }
 .file-card .msg-del:hover { color:#8b3030; }
 .inbox-subhead { font-size:.65rem; color:#5a4f38; letter-spacing:.15em; margin:14px 0 8px; padding-inline-start:2px; }
+.upload-box { background:#0c0c0c; border:1px solid #1e1e12; border-radius:12px; padding:14px; margin-bottom:16px; }
+.upload-box .send-btn { margin-top:10px; }
+.upload-box .file-hint { margin-top:8px; margin-bottom:0; }
+.owned-files-list { margin-top:12px; display:flex; flex-direction:column; gap:6px; }
+.owned-file-row {
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  padding:8px 10px; background:#111; border:1px solid #1e1e12; border-radius:8px;
+  font-size:.7rem; color:#a89878;
+}
+.owned-file-row .msg-del { position:static; font-size:.75rem; }
 .secret-trigger { cursor:pointer; user-select:none; color:#7a5f2a; transition:color .2s; }
 .secret-trigger:hover { color:#c9a84c; }
 .inbox-overlay { display:none; position:fixed; inset:0; z-index:99999; background:rgba(0,0,0,0.97); backdrop-filter:blur(10px); flex-direction:column; }
@@ -507,6 +526,11 @@ animation:crownFloat 3s ease infinite;
     <video controls playsinline webkit-playsinline preload="metadata">
       <source src="https://github.com/x1877/x1877.github.io/raw/refs/heads/main/2691146311968715241.mp4" type="video/mp4">
     </video>
+  </div>
+  <div class="sec" data-i18n="sec-downloads" id="downloadsSecTitle">◈ Downloads</div>
+  <div id="publicFilesList" class="public-files-list">
+    <div class="empty-inbox" id="pubFilesEmpty" style="display:none;">◈ لا توجد ملفات بعد</div>
+    <div class="loading-spinner" id="pubFilesLoading">◈ جاري التحميل...</div>
   </div>
   <div class="sec" data-i18n="sec-certs">◈ Certificates &amp; Skills</div>
   <div class="certs-section">
@@ -844,6 +868,17 @@ animation:crownFloat 3s ease infinite;
     <div class="pin-error" id="pinError">✕ رمز خاطئ</div>
   </div>
   <div class="inbox-body" id="inboxBody" style="display:none;">
+    <div class="inbox-subhead">◈ رفع ملف للزوار</div>
+    <div class="upload-box">
+      <label class="file-drop" id="pubFileDropLabel" for="pubFileInput">
+        <span id="pubFileDropText">◈ اضغط لاختيار ملف (أي نوع)</span>
+      </label>
+      <input type="file" id="pubFileInput" onchange="handlePubFilePick()" style="display:none;"/>
+      <input type="text" class="name-input" id="pubFileCaption" placeholder="وصف قصير (اختياري)" maxlength="60" style="margin-top:10px;"/>
+      <button class="send-btn" id="pubUploadBtn" onclick="uploadPublicFile()">رفع ✦</button>
+      <div class="file-hint" id="pubFileHint">يظهر للجميع بقسم Downloads بالموقع</div>
+      <div id="ownedFilesList" class="owned-files-list"></div>
+    </div>
     <div class="empty-inbox" id="emptyNotice" style="display:none;">◈ لا توجد رسائل بعد</div>
     <div class="loading-spinner" id="loadingSpinner">◈ جاري التحميل...</div>
     <div class="inbox-subhead" id="filesSubhead" style="display:none;">◈ ملفات مرسلة</div>
@@ -874,6 +909,8 @@ animation:crownFloat 3s ease infinite;
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, serverTimestamp, setDoc, onSnapshot, increment }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
 const app = initializeApp({
   apiKey: "AIzaSyBzOyrkF5fCw-xYDj2teE8abapHAyDyXkE",
@@ -884,8 +921,9 @@ const app = initializeApp({
   appId: "1:264666600140:web:ec02edb1941d75f625a869"
 });
 const db = getFirestore(app);
+const storage = getStorage(app);
 
-window._fb = { db, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, serverTimestamp, setDoc, onSnapshot, increment };
+window._fb = { db, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, serverTimestamp, setDoc, onSnapshot, increment, storage, ref, uploadBytes, getDownloadURL, deleteObject };
 window._firebaseReady = true;
 window.dispatchEvent(new Event('firebaseReady'));
 </script>
@@ -893,7 +931,9 @@ window.dispatchEvent(new Event('firebaseReady'));
 <script>
 const COLLECTION = "messages";
 const FILES_COLLECTION = "file_submissions";
+const PUBLIC_FILES_COLLECTION = "public_files";
 const MAX_FILE_SIZE = 500 * 1024;
+const MAX_PUBLIC_FILE_SIZE = 20 * 1024 * 1024;
 const SECRET_PIN = "313"; // ← غيّر الرمز هنا
 let pinPassed = false;
 
@@ -1058,7 +1098,7 @@ window.sendFile=sendFile;
 function openInbox(){
   document.getElementById('inboxPanel').classList.add('open');
   if(!pinPassed){document.getElementById('pinScreen').style.display='flex';document.getElementById('inboxBody').style.display='none';document.getElementById('inboxActions').style.display='none';setTimeout(()=>document.getElementById('pinInput').focus(),100);}
-  else {renderMessages();renderFiles();}
+  else {renderMessages();renderFiles();renderOwnedFiles();}
 }
 window.openInbox=openInbox;
 function closeInbox(){document.getElementById('inboxPanel').classList.remove('open');document.getElementById('pinInput').value='';document.getElementById('pinError').style.display='none';}
@@ -1071,6 +1111,7 @@ function checkPin(){
     document.getElementById('inboxActions').style.display='flex';
     renderMessages();
     renderFiles();
+    renderOwnedFiles();
   }else{
     document.getElementById('pinError').style.display='block';
     document.getElementById('pinInput').value='';
@@ -1171,6 +1212,128 @@ async function deleteFile(id){
 }
 window.deleteFile=deleteFile;
 
+// ── Public Files (owner uploads → everyone sees on the page) ──
+let _pubPickedFile=null;
+
+function handlePubFilePick(){
+  const input=document.getElementById('pubFileInput');
+  const label=document.getElementById('pubFileDropLabel');
+  const dropText=document.getElementById('pubFileDropText');
+  const hint=document.getElementById('pubFileHint');
+  const file=input.files[0];
+  _pubPickedFile=null;
+  if(!file)return;
+  if(file.size>MAX_PUBLIC_FILE_SIZE){
+    hint.textContent='✕ الملف أكبر من 20MB';
+    hint.classList.add('warn');
+    label.classList.remove('picked');
+    input.value='';
+    return;
+  }
+  _pubPickedFile=file;
+  dropText.textContent=getFileEmoji(file.name)+' '+file.name+'  ·  '+Math.max(1,Math.round(file.size/1024))+'KB';
+  label.classList.add('picked');
+  hint.textContent='يظهر للجميع بقسم Downloads بالموقع';
+  hint.classList.remove('warn');
+}
+window.handlePubFilePick=handlePubFilePick;
+
+async function uploadPublicFile(){
+  const hint=document.getElementById('pubFileHint');
+  const caption=document.getElementById('pubFileCaption').value.trim();
+  if(!_pubPickedFile){hint.textContent='✕ اختر ملف أول';hint.classList.add('warn');return;}
+  if(!window._firebaseReady){alert('جاري الاتصال، انتظر ثانية');return;}
+  const btn=document.getElementById('pubUploadBtn');
+  btn.disabled=true;btn.textContent='...';
+  try{
+    const fb=window._fb;
+    const path='public_files/'+Date.now()+'_'+_pubPickedFile.name;
+    const sref=fb.ref(fb.storage,path);
+    await fb.uploadBytes(sref,_pubPickedFile);
+    const url=await fb.getDownloadURL(sref);
+    await fb.addDoc(fb.collection(fb.db,PUBLIC_FILES_COLLECTION),{
+      name:_pubPickedFile.name, url, path, caption, size:_pubPickedFile.size,
+      time:new Date().toISOString(), ts:fb.serverTimestamp()
+    });
+    hint.textContent='✦ تم الرفع بنجاح ✦';hint.classList.remove('warn');
+    launchConfetti();
+    document.getElementById('pubFileInput').value='';
+    document.getElementById('pubFileCaption').value='';
+    document.getElementById('pubFileDropText').textContent='◈ اضغط لاختيار ملف (أي نوع)';
+    document.getElementById('pubFileDropLabel').classList.remove('picked');
+    _pubPickedFile=null;
+    loadPublicFiles();
+    renderOwnedFiles();
+  }catch(e){
+    hint.textContent='✕ فشل الرفع، جرب لاحقاً';hint.classList.add('warn');
+  }
+  btn.disabled=false;btn.textContent='رفع ✦';
+}
+window.uploadPublicFile=uploadPublicFile;
+
+async function loadPublicFiles(){
+  const list=document.getElementById('publicFilesList');
+  const empty=document.getElementById('pubFilesEmpty');
+  const loading=document.getElementById('pubFilesLoading');
+  if(!window._firebaseReady){setTimeout(loadPublicFiles,500);return;}
+  loading.style.display='block';empty.style.display='none';
+  Array.from(list.querySelectorAll('.pub-file')).forEach(el=>el.remove());
+  try{
+    const fb=window._fb;
+    const q=fb.query(fb.collection(fb.db,PUBLIC_FILES_COLLECTION),fb.orderBy('ts','desc'));
+    const snap=await fb.getDocs(q);
+    loading.style.display='none';
+    if(snap.empty){empty.style.display='block';return;}
+    snap.forEach(d=>{
+      const m=d.data();
+      const kb=m.size?Math.max(1,Math.round(m.size/1024)):'?';
+      const a=document.createElement('a');
+      a.className='pub-file'; a.href=m.url; a.target='_blank'; a.rel='noopener';
+      a.download=m.name||'file';
+      a.innerHTML=`<div class="li">${getFileEmoji(m.name)}</div>
+        <div class="lt"><span class="ll">${escapeHtml(m.name||'file')}</span><span class="lv">${kb}KB${m.caption?' · '+escapeHtml(m.caption):''}</span></div>
+        <span class="la">⬇</span>`;
+      list.appendChild(a);
+    });
+  }catch(e){loading.style.display='none';empty.textContent='◈ خطأ بالتحميل';empty.style.display='block';}
+}
+window.loadPublicFiles=loadPublicFiles;
+
+async function renderOwnedFiles(){
+  const box=document.getElementById('ownedFilesList');
+  if(!box)return;
+  box.innerHTML='';
+  if(!window._firebaseReady)return;
+  try{
+    const fb=window._fb;
+    const q=fb.query(fb.collection(fb.db,PUBLIC_FILES_COLLECTION),fb.orderBy('ts','desc'));
+    const snap=await fb.getDocs(q);
+    snap.forEach(d=>{
+      const m=d.data();
+      _pubFileCache[d.id]={path:m.path||''};
+      const row=document.createElement('div');
+      row.className='owned-file-row';
+      row.innerHTML=`<span>${getFileEmoji(m.name)} ${escapeHtml(m.name||'file')}</span><button class="msg-del" onclick="deletePublicFile('${d.id}')">✕</button>`;
+      box.appendChild(row);
+    });
+  }catch(e){}
+}
+window.renderOwnedFiles=renderOwnedFiles;
+
+const _pubFileCache={};
+async function deletePublicFile(id){
+  if(!confirm('حذف هذا الملف من Downloads؟'))return;
+  const fb=window._fb;
+  const path=(_pubFileCache[id]||{}).path;
+  try{ if(path) await fb.deleteObject(fb.ref(fb.storage,path)); }catch(e){}
+  await fb.deleteDoc(fb.doc(fb.db,PUBLIC_FILES_COLLECTION,id));
+  loadPublicFiles();
+  renderOwnedFiles();
+}
+window.deletePublicFile=deletePublicFile;
+
+
+
 
 
 async function clearAllMessages(){
@@ -1189,6 +1352,7 @@ window.clearAllMessages=clearAllMessages;
 const translations = {
   en: {
     'sec-certs':    '◈ Certificates & Skills',
+    'sec-downloads':'◈ Downloads',
     'sec-visitors': '◈ Visitors',
     'sec-skills':   '◈ Skills',
     'sec-stats':    '◈ Stats',
@@ -1235,6 +1399,7 @@ const translations = {
   },
   ar: {
     'sec-certs':    '◈ الشهادات والمهارات',
+    'sec-downloads':'◈ ملفات للتحميل',
     'sec-visitors': '◈ الزوار',
     'sec-skills':   '◈ المهارات',
     'sec-stats':    '◈ الإحصائيات',
@@ -1441,6 +1606,7 @@ async function initVisitor() {
   }
 }
 initVisitor();
+loadPublicFiles();
 
 // ── Flip Cards Touch (mobile) ──
 document.querySelectorAll('.flip-card').forEach(card => {
