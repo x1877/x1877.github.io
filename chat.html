@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>x1877 · chat</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="chat.css" />
+</head>
+<body>
+
+  <!-- ================= AUTH SCREEN ================= -->
+  <div id="authScreen" class="screen">
+    <div class="authCard">
+      <div class="diamond"><span class="green">◈</span> ACCESS TERMINAL</div>
+      <h1 class="brand">x1877<span class="green">@</span>chat<span class="sub">:~$</span></h1>
+      <p class="hint">دخول أو إنشاء حساب حقيقي — يتحفظ على قاعدة بيانات Firebase</p>
+
+      <label class="fieldLabel">username</label>
+      <input id="authUser" class="field mono" placeholder="_" autocomplete="off" />
+
+      <label class="fieldLabel">password</label>
+      <input id="authPass" class="field mono" type="password" placeholder="_" autocomplete="off" />
+
+      <p id="authError" class="error hidden"></p>
+      <p class="hint small">يوزر جديد → ينسوي حساب حقيقي. يوزر موجود → دخول عادي.</p>
+      <button id="authBtn" class="btn primary mono">&gt; connect</button>
+    </div>
+  </div>
+
+  <!-- ================= MAIN APP ================= -->
+  <div id="appScreen" class="screen hidden">
+    <div class="layout">
+
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="sideHeader">
+          <div class="me">
+            <div id="avatar" class="avatar mono"></div>
+            <div>
+              <p id="meName" class="meName"></p>
+              <button id="copyIdBtn" class="idBtn mono">#<span id="meId"></span> <span class="copyIcon">⧉</span></button>
+            </div>
+          </div>
+          <div class="sideActions">
+            <button id="settingsBtn" title="الإعدادات" class="iconBtn">⚙</button>
+            <button id="logoutBtn" title="خروج" class="iconBtn">⏻</button>
+          </div>
+        </div>
+
+        <div class="statsBar mono">
+          <span class="sub">Visitors: <span id="totalVisits" class="gold">…</span></span>
+          <span class="green">● <span id="onlineCount">1</span> online</span>
+        </div>
+
+        <div class="tabs">
+          <button id="tabFriends" class="tab active">أصدقاء</button>
+          <button id="tabGroups" class="tab">كروبات</button>
+        </div>
+
+        <!-- Friends panel -->
+        <div id="friendsPanel" class="panel">
+          <div class="panelBlock">
+            <div class="diamond small"><span class="green">◈</span> Add friend</div>
+            <div class="row">
+              <input id="addFriendInput" class="field mono small" placeholder="username or #id" />
+              <button id="addFriendBtn" class="btn small">+</button>
+            </div>
+          </div>
+          <div id="friendsList" class="list"></div>
+        </div>
+
+        <!-- Groups panel -->
+        <div id="groupsPanel" class="panel hidden">
+          <div class="panelBlock">
+            <button id="newGroupBtn" class="btn outline small full">+ كروب جديد</button>
+          </div>
+          <div id="groupsList" class="list"></div>
+        </div>
+      </div>
+
+      <!-- Chat area -->
+      <div class="chatArea">
+        <div id="emptyState" class="emptyState mono">// اختر صديق أو كروب</div>
+
+        <div id="chatWindow" class="chatWindow hidden">
+          <div class="chatHeader">
+            <p id="chatTitle" class="mono chatTitleText"></p>
+            <span class="sub mono small">🔒 encrypted</span>
+          </div>
+          <div id="messagesBox" class="messagesBox"></div>
+          <div class="composer">
+            <input id="msgInput" class="field grow" placeholder="اكتب رسالتك..." />
+            <button id="sendBtn" class="btn primary">➤</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= NEW GROUP MODAL ================= -->
+  <div id="newGroupModal" class="modalOverlay hidden">
+    <div class="modal">
+      <div class="modalHead">
+        <div class="diamond small"><span class="green">◈</span> New group</div>
+        <button class="iconBtn" data-close="newGroupModal">✕</button>
+      </div>
+      <input id="newGroupName" class="field" placeholder="اسم الكروب" />
+      <p class="hint small">اختار أعضاء من أصدقائك:</p>
+      <div id="newGroupMembers" class="checklist"></div>
+      <button id="createGroupBtn" class="btn primary full">إنشاء</button>
+    </div>
+  </div>
+
+  <!-- ================= SETTINGS MODAL ================= -->
+  <div id="settingsModal" class="modalOverlay hidden">
+    <div class="modal">
+      <div class="modalHead">
+        <div class="diamond small"><span class="green">◈</span> Change password</div>
+        <button class="iconBtn" data-close="settingsModal">✕</button>
+      </div>
+      <label class="fieldLabel">current password</label>
+      <input id="oldPass" type="password" class="field" />
+      <label class="fieldLabel">new password</label>
+      <input id="newPass" type="password" class="field" />
+      <label class="fieldLabel">confirm new password</label>
+      <input id="newPass2" type="password" class="field" />
+      <p id="settingsError" class="error hidden"></p>
+      <button id="changePassBtn" class="btn primary full">حفظ</button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast mono hidden"></div>
+
+  <!-- Firebase (modular SDK via CDN) -->
+  <script type="module" src="firebase-config.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

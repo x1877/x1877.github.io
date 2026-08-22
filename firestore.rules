@@ -1,0 +1,41 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ⚠️ اقرا README.md قبل لا تنسخ هذا — فيه شرح ليش هذا مب حماية 100%
+    // بما إنه ما عدنا Firebase Auth حقيقي (اليوزر/باسوورد مسويها إحنا بالكود)،
+    // Firestore ما تكدر تتحقق مين اللي فعلاً مسوي الطلب. هذا يخليها مفتوحة
+    // شوي أكثر من اللازم، بس أفضل من ما تكون كل قاعدة البيانات عندك مفتوحة
+    // لكل مشاريعك الثانية.
+
+    match /chatUsers/{username} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasAll(['passHash','id','friends','createdAt']);
+      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+                      .hasOnly(['passHash','friends']);
+      allow delete: if false;
+    }
+
+    match /chatMessages/{msgId} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasAll(['chatId','from','enc','ts']);
+      allow update, delete: if false;
+    }
+
+    match /chatGroups/{groupId} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasAll(['name','members','owner','createdAt']);
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members']);
+      allow delete: if false;
+    }
+
+    match /chatPresence/{username} {
+      allow read, write: if true;
+    }
+
+    match /chatStats/{docId} {
+      allow read: if true;
+      allow write: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['totalVisits']);
+    }
+  }
+}
