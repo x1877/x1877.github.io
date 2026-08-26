@@ -233,18 +233,25 @@ function switchTab(tab) {
 function listenFriends() {
   const ref = doc(db, "chatUsers", session.username);
   if (friendsUnsub) friendsUnsub();
-  friendsUnsub = onSnapshot(ref, async (snap) => {
-    if (!snap.exists()) return;
-    const usernames = snap.data().friends || [];
-    const objs = await Promise.all(
-      usernames.map(async (f) => {
-        const s = await getDoc(doc(db, "chatUsers", f));
-        return s.exists() ? { username: f, id: s.data().id } : { username: f, id: "?" };
-      })
-    );
-    renderFriends(objs);
-    renderGroupMemberChecklist(objs);
-  });
+  friendsUnsub = onSnapshot(
+    ref,
+    async (snap) => {
+      if (!snap.exists()) return;
+      const usernames = snap.data().friends || [];
+      const objs = await Promise.all(
+        usernames.map(async (f) => {
+          const s = await getDoc(doc(db, "chatUsers", f));
+          return s.exists() ? { username: f, id: s.data().id } : { username: f, id: "?" };
+        })
+      );
+      renderFriends(objs);
+      renderGroupMemberChecklist(objs);
+    },
+    (err) => {
+      console.error("friends listener error", err);
+      showToast("✕ خطأ بجلب الأصدقاء: " + err.message);
+    }
+  );
 }
 
 function renderFriends(objs) {
@@ -302,11 +309,18 @@ async function getDocsOnce(collName) {
 function listenGroups() {
   const q = query(collection(db, "chatGroups"), where("members", "array-contains", session.username));
   if (groupsUnsub) groupsUnsub();
-  groupsUnsub = onSnapshot(q, (snap) => {
-    const groups = [];
-    snap.forEach((d) => groups.push({ id: d.id, ...d.data() }));
-    renderGroups(groups);
-  });
+  groupsUnsub = onSnapshot(
+    q,
+    (snap) => {
+      const groups = [];
+      snap.forEach((d) => groups.push({ id: d.id, ...d.data() }));
+      renderGroups(groups);
+    },
+    (err) => {
+      console.error("groups listener error", err);
+      showToast("✕ خطأ بجلب الكروبات: " + err.message);
+    }
+  );
 }
 
 function renderGroups(groups) {
@@ -376,14 +390,25 @@ function openChat(chat) {
 function listenMessages() {
   const chatId = selectedChat.type === "dm" ? dmChatId(session.username, selectedChat.id) : "group__" + selectedChat.id;
   const secret = secretForChat(selectedChat);
-  const q = query(collection(db, "chatMessages"), where("chatId", "==", chatId), orderBy("ts", "asc"));
+  // NOTE: no orderBy here on purpose — where() + orderBy() on a different field
+  // needs a composite Firestore index, and without it the listener fails silently.
+  // We sort by timestamp ourselves after fetching instead.
+  const q = query(collection(db, "chatMessages"), where("chatId", "==", chatId));
   if (messagesUnsub) messagesUnsub();
-  messagesUnsub = onSnapshot(q, async (snap) => {
-    const raw = [];
-    snap.forEach((d) => raw.push(d.data()));
-    const decrypted = await Promise.all(raw.map(async (m) => ({ from: m.from, ts: m.ts, text: await decryptText(m.enc, secret) })));
-    renderMessages(decrypted);
-  });
+  messagesUnsub = onSnapshot(
+    q,
+    async (snap) => {
+      const raw = [];
+      snap.forEach((d) => raw.push(d.data()));
+      raw.sort((a, b) => a.ts - b.ts);
+      const decrypted = await Promise.all(raw.map(async (m) => ({ from: m.from, ts: m.ts, text: await decryptText(m.enc, secret) })));
+      renderMessages(decrypted);
+    },
+    (err) => {
+      console.error("messages listener error", err);
+      showToast("✕ ما كدرت أجيب الرسائل: " + err.message);
+    }
+  );
 }
 
 function renderMessages(list) {
@@ -416,6 +441,21 @@ function renderMessages(list) {
 
 sendBtn.onclick = sendMessage;
 msgInput.addEventListener("keydown", (e) => e.key === "Enter" && sendMessage());
+
+// ---------------- emoji picker ----------------
+const EMOJIS = ["😀","😂","🥹","😍","😘","😎","🤔","😢","😭","😡","🥳","👍","👎","🙏","🔥","💯","❤️","🤍","💔","👋","😴","😱","🤝","🎉","😅","🙄","😏","🫡","😴","👌"];
+const emojiBtn = $("emojiBtn"), emojiPanel = $("emojiPanel");
+EMOJIS.forEach((e) => {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.textContent = e;
+  b.onclick = () => {
+    msgInput.value += e;
+    msgInput.focus();
+  };
+  emojiPanel.appendChild(b);
+});
+emojiBtn.onclick = () => emojiPanel.classList.toggle("hidden");
 
 async function sendMessage() {
   const text = msgInput.value.trim();
