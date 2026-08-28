@@ -1,8 +1,8 @@
 import { db } from "./firebase-config.js";
 import {
   doc, getDoc, setDoc, updateDoc, getDocs,
-  collection, query, where, orderBy, onSnapshot,
-  addDoc, increment, serverTimestamp,
+  collection, query, where, onSnapshot,
+  addDoc, increment,
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 // ---------------- crypto helpers ----------------
@@ -34,19 +34,46 @@ const decryptText = async (payload, secret) => {
 const dmChatId = (a, b) => "dm__" + [a, b].sort().join("__");
 const secretForChat = (chat) => (chat.type === "dm" ? dmChatId(session.username, chat.id) : "group__" + chat.id);
 
+// compress an uploaded image file into a small square JPEG data URL
+const fileToAvatarDataUrl = (file, maxSize = 128, quality = 0.75) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        const side = Math.min(img.width, img.height);
+        const sx = (img.width - side) / 2;
+        const sy = (img.height - side) / 2;
+        const canvas = document.createElement("canvas");
+        canvas.width = maxSize;
+        canvas.height = maxSize;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, sx, sy, side, side, 0, 0, maxSize, maxSize);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
 // ---------------- state ----------------
-let session = null; // {username, id}
+let session = null; // {username, id, displayName, avatar}
 let selectedChat = null; // {type:'dm'|'group', id, name}
 let friendsUnsub = null;
 let groupsUnsub = null;
 let messagesUnsub = null;
 let presenceUnsub = null;
+let pendingAvatarDataUrl = null;
+let forgotTargetUsername = null;
 
 // ---------------- DOM refs ----------------
 const $ = (id) => document.getElementById(id);
 const authScreen = $("authScreen"), appScreen = $("appScreen");
 const authUser = $("authUser"), authPass = $("authPass"), authError = $("authError"), authBtn = $("authBtn");
-const meName = $("meName"), meId = $("meId"), avatar = $("avatar");
+const secQuestion = $("secQuestion"), secAnswer = $("secAnswer"), forgotLink = $("forgotLink");
+const meName = $("meName"), meHandle = $("meHandle"), meId = $("meId"), avatarBtn = $("avatarBtn");
 const totalVisitsEl = $("totalVisits"), onlineCountEl = $("onlineCount");
 const friendsList = $("friendsList"), groupsList = $("groupsList");
 const addFriendInput = $("addFriendInput"), addFriendBtn = $("addFriendBtn");
@@ -55,7 +82,13 @@ const friendsPanel = $("friendsPanel"), groupsPanel = $("groupsPanel");
 const newGroupBtn = $("newGroupBtn"), newGroupModal = $("newGroupModal");
 const newGroupName = $("newGroupName"), newGroupMembers = $("newGroupMembers"), createGroupBtn = $("createGroupBtn");
 const settingsBtn = $("settingsBtn"), settingsModal = $("settingsModal");
+const avatarPreview = $("avatarPreview"), choosePhotoBtn = $("choosePhotoBtn"), photoInput = $("photoInput");
+const displayNameInput = $("displayNameInput"), profileError = $("profileError"), saveProfileBtn = $("saveProfileBtn");
 const oldPass = $("oldPass"), newPass = $("newPass"), newPass2 = $("newPass2"), settingsError = $("settingsError"), changePassBtn = $("changePassBtn");
+const forgotModal = $("forgotModal"), forgotStep1 = $("forgotStep1"), forgotStep2 = $("forgotStep2");
+const forgotUser = $("forgotUser"), forgotError1 = $("forgotError1"), forgotFetchBtn = $("forgotFetchBtn");
+const forgotQuestionText = $("forgotQuestionText"), forgotAnswer = $("forgotAnswer");
+const forgotNewPass = $("forgotNewPass"), forgotNewPass2 = $("forgotNewPass2"), forgotError2 = $("forgotError2"), forgotResetBtn = $("forgotResetBtn");
 const logoutBtn = $("logoutBtn"), copyIdBtn = $("copyIdBtn");
 const emptyState = $("emptyState"), chatWindow = $("chatWindow"), chatTitle = $("chatTitle");
 const messagesBox = $("messagesBox"), msgInput = $("msgInput"), sendBtn = $("sendBtn");
@@ -67,9 +100,31 @@ const showToast = (t) => {
   setTimeout(() => toast.classList.add("hidden"), 2200);
 };
 
+const renderAvatarInto = (el, name, avatarDataUrl) => {
+  if (avatarDataUrl) {
+    el.innerHTML = "";
+    const img = document.createElement("img");
+    img.src = avatarDataUrl;
+    el.appendChild(img);
+  } else {
+    el.textContent = name?.[0]?.toUpperCase() || "?";
+  }
+};
+
 // ---------------- auth ----------------
 authBtn.onclick = handleAuth;
 authPass.addEventListener("keydown", (e) => e.key === "Enter" && handleAuth());
+forgotLink.onclick = () => {
+  forgotStep1.classList.remove("hidden");
+  forgotStep2.classList.add("hidden");
+  forgotUser.value = "";
+  forgotAnswer.value = "";
+  forgotNewPass.value = "";
+  forgotNewPass2.value = "";
+  forgotError1.classList.add("hidden");
+  forgotError2.classList.add("hidden");
+  forgotModal.classList.remove("hidden");
+};
 
 async function handleAuth() {
   const uname = authUser.value.trim();
@@ -95,11 +150,23 @@ async function handleAuth() {
         authBtn.textContent = "> connect";
         return;
       }
-      session = { username: uname, id: data.id };
+      session = { username: uname, id: data.id, displayName: data.displayName || uname, avatar: data.avatar || "" };
     } else {
+      if (!secQuestion.value.trim() || !secAnswer.value.trim()) {
+        authError.textContent = "✕ عبي سؤال الأمان و جوابه (تحتاجهم لو نسيت الباسوورد)";
+        authError.classList.remove("hidden");
+        authBtn.disabled = false;
+        authBtn.textContent = "> connect";
+        return;
+      }
       const id = String(Math.floor(100000 + Math.random() * 899999));
-      await setDoc(ref, { passHash, id, friends: [], createdAt: Date.now() });
-      session = { username: uname, id };
+      const secAnswerHash = await sha256Hex(uname.toLowerCase() + ":" + secAnswer.value.trim().toLowerCase());
+      await setDoc(ref, {
+        passHash, id, friends: [], createdAt: Date.now(),
+        displayName: uname, avatar: "",
+        secQuestion: secQuestion.value.trim(), secAnswerHash,
+      });
+      session = { username: uname, id, displayName: uname, avatar: "" };
       showToast("تم إنشاء الحساب ✓");
     }
     localStorage.setItem("x1877chat_session", JSON.stringify(session));
@@ -127,13 +194,18 @@ async function handleAuth() {
 function enterApp() {
   authScreen.classList.add("hidden");
   appScreen.classList.remove("hidden");
-  meName.textContent = session.username;
-  meId.textContent = session.id;
-  avatar.textContent = session.username[0]?.toUpperCase() || "?";
+  refreshMeUI();
   bumpVisitorCount();
   startPresenceHeartbeat();
   listenFriends();
   listenGroups();
+}
+
+function refreshMeUI() {
+  meName.textContent = session.displayName || session.username;
+  meHandle.textContent = "@" + session.username;
+  meId.textContent = session.id;
+  renderAvatarInto(avatarBtn, session.displayName || session.username, session.avatar);
 }
 
 logoutBtn.onclick = () => {
@@ -155,12 +227,63 @@ copyIdBtn.onclick = () => {
   showToast("Copied ✓");
 };
 
-// ---------------- password change ----------------
-settingsBtn.onclick = () => settingsModal.classList.remove("hidden");
+// ---------------- profile: avatar + display name ----------------
+avatarBtn.onclick = openProfileModal;
+settingsBtn.onclick = openProfileModal;
 document.querySelectorAll("[data-close]").forEach((btn) => {
   btn.onclick = () => $(btn.dataset.close).classList.add("hidden");
 });
 
+function openProfileModal() {
+  pendingAvatarDataUrl = null;
+  displayNameInput.value = session.displayName || session.username;
+  renderAvatarInto(avatarPreview, session.displayName || session.username, session.avatar);
+  profileError.classList.add("hidden");
+  oldPass.value = ""; newPass.value = ""; newPass2.value = "";
+  settingsError.classList.add("hidden");
+  settingsModal.classList.remove("hidden");
+}
+
+choosePhotoBtn.onclick = () => photoInput.click();
+photoInput.onchange = async () => {
+  const file = photoInput.files?.[0];
+  if (!file) return;
+  try {
+    pendingAvatarDataUrl = await fileToAvatarDataUrl(file);
+    renderAvatarInto(avatarPreview, session.displayName || session.username, pendingAvatarDataUrl);
+  } catch (e) {
+    console.error(e);
+    showToast("✕ ما كدرت أفتح هذي الصورة");
+  }
+};
+
+saveProfileBtn.onclick = async () => {
+  profileError.classList.add("hidden");
+  const name = displayNameInput.value.trim();
+  if (!name) {
+    profileError.textContent = "✕ حط اسم";
+    profileError.classList.remove("hidden");
+    return;
+  }
+  saveProfileBtn.disabled = true;
+  const update = { displayName: name };
+  if (pendingAvatarDataUrl) update.avatar = pendingAvatarDataUrl;
+  try {
+    await updateDoc(doc(db, "chatUsers", session.username), update);
+    session.displayName = name;
+    if (pendingAvatarDataUrl) session.avatar = pendingAvatarDataUrl;
+    localStorage.setItem("x1877chat_session", JSON.stringify(session));
+    refreshMeUI();
+    showToast("تحفظ الملف الشخصي ✓");
+  } catch (e) {
+    console.error(e);
+    profileError.textContent = "✕ صار خطأ، جرب مرة ثانية (يمكن الصورة كبيرة)";
+    profileError.classList.remove("hidden");
+  }
+  saveProfileBtn.disabled = false;
+};
+
+// ---------------- password change (while logged in) ----------------
 changePassBtn.onclick = async () => {
   settingsError.classList.add("hidden");
   if (!oldPass.value || !newPass.value) {
@@ -190,6 +313,59 @@ changePassBtn.onclick = async () => {
   settingsModal.classList.add("hidden");
   oldPass.value = ""; newPass.value = ""; newPass2.value = "";
   showToast("تغيّر الرمز ✓");
+};
+
+// ---------------- forgot password (security question) ----------------
+forgotFetchBtn.onclick = async () => {
+  forgotError1.classList.add("hidden");
+  const uname = forgotUser.value.trim();
+  if (!uname) {
+    forgotError1.textContent = "✕ اكتب اليوزر";
+    forgotError1.classList.remove("hidden");
+    return;
+  }
+  forgotFetchBtn.disabled = true;
+  const snap = await getDoc(doc(db, "chatUsers", uname));
+  forgotFetchBtn.disabled = false;
+  if (!snap.exists() || !snap.data().secQuestion) {
+    forgotError1.textContent = "✕ ما لكيت هذا اليوزر أو ما عنده سؤال أمان محفوظ";
+    forgotError1.classList.remove("hidden");
+    return;
+  }
+  forgotTargetUsername = uname;
+  forgotQuestionText.textContent = snap.data().secQuestion;
+  forgotStep1.classList.add("hidden");
+  forgotStep2.classList.remove("hidden");
+};
+
+forgotResetBtn.onclick = async () => {
+  forgotError2.classList.add("hidden");
+  if (!forgotAnswer.value.trim() || !forgotNewPass.value) {
+    forgotError2.textContent = "✕ عبي كل الحقول";
+    forgotError2.classList.remove("hidden");
+    return;
+  }
+  if (forgotNewPass.value !== forgotNewPass2.value) {
+    forgotError2.textContent = "✕ الباسوورد الجديد ما يتطابق";
+    forgotError2.classList.remove("hidden");
+    return;
+  }
+  forgotResetBtn.disabled = true;
+  const ref = doc(db, "chatUsers", forgotTargetUsername);
+  const snap = await getDoc(ref);
+  const data = snap.data();
+  const answerHash = await sha256Hex(forgotTargetUsername.toLowerCase() + ":" + forgotAnswer.value.trim().toLowerCase());
+  if (answerHash !== data.secAnswerHash) {
+    forgotError2.textContent = "✕ الجواب غلط";
+    forgotError2.classList.remove("hidden");
+    forgotResetBtn.disabled = false;
+    return;
+  }
+  const newHash = await sha256Hex(forgotTargetUsername.toLowerCase() + ":" + forgotNewPass.value);
+  await updateDoc(ref, { passHash: newHash });
+  forgotResetBtn.disabled = false;
+  forgotModal.classList.add("hidden");
+  showToast("تغيّر الباسوورد ✓ سجل دخول الحين");
 };
 
 // ---------------- visitor / presence counters ----------------
@@ -241,7 +417,9 @@ function listenFriends() {
       const objs = await Promise.all(
         usernames.map(async (f) => {
           const s = await getDoc(doc(db, "chatUsers", f));
-          return s.exists() ? { username: f, id: s.data().id } : { username: f, id: "?" };
+          return s.exists()
+            ? { username: f, id: s.data().id, displayName: s.data().displayName || f, avatar: s.data().avatar || "" }
+            : { username: f, id: "?", displayName: f, avatar: "" };
         })
       );
       renderFriends(objs);
@@ -263,8 +441,11 @@ function renderFriends(objs) {
   objs.forEach((f) => {
     const btn = document.createElement("button");
     btn.className = "listItem" + (selectedChat?.id === f.username && selectedChat?.type === "dm" ? " active" : "");
-    btn.innerHTML = `<span class="dot"></span>${f.username}`;
-    btn.onclick = () => openChat({ type: "dm", id: f.username, name: f.username });
+    const dot = document.createElement("span");
+    dot.className = "dot";
+    btn.appendChild(dot);
+    btn.appendChild(document.createTextNode(f.displayName));
+    btn.onclick = () => openChat({ type: "dm", id: f.username, name: f.displayName });
     friendsList.appendChild(btn);
   });
 }
@@ -360,7 +541,7 @@ function renderGroupMemberChecklist(friendObjs) {
       else selectedFriendsForGroup.delete(f.username);
     };
     label.appendChild(cb);
-    label.appendChild(document.createTextNode(f.username));
+    label.appendChild(document.createTextNode(f.displayName));
     newGroupMembers.appendChild(label);
   });
 }
@@ -443,7 +624,7 @@ sendBtn.onclick = sendMessage;
 msgInput.addEventListener("keydown", (e) => e.key === "Enter" && sendMessage());
 
 // ---------------- emoji picker ----------------
-const EMOJIS = ["😀","😂","🥹","😍","😘","😎","🤔","😢","😭","😡","🥳","👍","👎","🙏","🔥","💯","❤️","🤍","💔","👋","😴","😱","🤝","🎉","😅","🙄","😏","🫡","😴","👌"];
+const EMOJIS = ["😀","😂","🥹","😍","😘","😎","🤔","😢","😭","😡","🥳","👍","👎","🙏","🔥","💯","❤️","🤍","💔","👋","😴","😱","🤝","🎉","😅","🙄","😏","🫡","👌"];
 const emojiBtn = $("emojiBtn"), emojiPanel = $("emojiPanel");
 EMOJIS.forEach((e) => {
   const b = document.createElement("button");

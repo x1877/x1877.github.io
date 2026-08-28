@@ -12,7 +12,7 @@ service cloud.firestore {
       allow read: if true;
       allow create: if request.resource.data.keys().hasAll(['passHash','id','friends','createdAt']);
       allow update: if request.resource.data.diff(resource.data).affectedKeys()
-                      .hasOnly(['passHash','friends']);
+                      .hasOnly(['passHash','friends','displayName','avatar']);
       allow delete: if false;
     }
 

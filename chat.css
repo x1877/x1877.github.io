@@ -58,7 +58,18 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-famil
 .me>div:first-child, .me{display:flex;align-items:center;gap:10px;}
 .sideActions{display:flex;gap:10px;margin-right:auto;}
 .avatar{width:36px;height:36px;border-radius:50%;background:#000;border:1px solid var(--green);
-  color:var(--green);display:flex;align-items:center;justify-content:center;font-weight:700;}
+  color:var(--green);display:flex;align-items:center;justify-content:center;font-weight:700;
+  overflow:hidden;padding:0;cursor:pointer;}
+.avatar img{width:100%;height:100%;object-fit:cover;}
+.meHandle{margin:0;color:var(--sub);font-size:11px;}
+.linkBtn{background:none;border:none;color:var(--green);font-size:11px;cursor:pointer;
+  padding:0 0 12px;text-align:right;width:100%;}
+.avatarEditRow{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.avatarBig{width:64px;height:64px;border-radius:50%;background:#000;border:1px solid var(--green);
+  color:var(--green);display:flex;align-items:center;justify-content:center;font-weight:700;
+  font-size:22px;overflow:hidden;flex-shrink:0;}
+.avatarBig img{width:100%;height:100%;object-fit:cover;}
+.divider{height:1px;background:var(--line);margin:18px 0;}
 .meName{margin:0;font-weight:700;line-height:1.2;}
 .idBtn{background:none;border:none;color:var(--sub);font-size:11px;display:flex;align-items:center;
   gap:4px;cursor:pointer;padding:0;}

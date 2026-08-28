@@ -21,9 +21,15 @@
 
       <label class="fieldLabel">password</label>
       <input id="authPass" class="field mono" type="password" placeholder="_" autocomplete="off" />
+      <button id="forgotLink" type="button" class="linkBtn">نسيت الباسوورد؟</button>
+
+      <label class="fieldLabel">سؤال أمان (أول مرة بس — لاسترجاع الباسوورد لاحقاً)</label>
+      <input id="secQuestion" class="field small" placeholder="مثال: اسم أول مدرسة روحتلها؟" />
+      <label class="fieldLabel">جواب السؤال</label>
+      <input id="secAnswer" class="field small" type="password" placeholder="الجواب" />
 
       <p id="authError" class="error hidden"></p>
-      <p class="hint small">يوزر جديد → ينسوي حساب حقيقي. يوزر موجود → دخول عادي.</p>
+      <p class="hint small">يوزر جديد → ينسوي حساب حقيقي (لازم تعبي سؤال الأمان). يوزر موجود → دخول عادي (تكدر تسيب سؤال الأمان فاضي).</p>
       <button id="authBtn" class="btn primary mono">&gt; connect</button>
     </div>
   </div>
@@ -36,9 +42,10 @@
       <div class="sidebar">
         <div class="sideHeader">
           <div class="me">
-            <div id="avatar" class="avatar mono"></div>
+            <button id="avatarBtn" class="avatar mono" title="الملف الشخصي"></button>
             <div>
               <p id="meName" class="meName"></p>
+              <p id="meHandle" class="meHandle mono"></p>
               <button id="copyIdBtn" class="idBtn mono">#<span id="meId"></span> <span class="copyIcon">⧉</span></button>
             </div>
           </div>
@@ -118,9 +125,25 @@
   <div id="settingsModal" class="modalOverlay hidden">
     <div class="modal">
       <div class="modalHead">
-        <div class="diamond small"><span class="green">◈</span> Change password</div>
+        <div class="diamond small"><span class="green">◈</span> Profile</div>
         <button class="iconBtn" data-close="settingsModal">✕</button>
       </div>
+
+      <div class="avatarEditRow">
+        <div id="avatarPreview" class="avatarBig mono">?</div>
+        <div>
+          <button id="choosePhotoBtn" class="btn outline small" type="button">تغيير الصورة</button>
+          <input id="photoInput" type="file" accept="image/*" class="hidden" />
+        </div>
+      </div>
+      <label class="fieldLabel">الاسم</label>
+      <input id="displayNameInput" class="field" placeholder="اسمك" />
+      <p id="profileError" class="error hidden"></p>
+      <button id="saveProfileBtn" class="btn primary full">حفظ الملف الشخصي</button>
+
+      <div class="divider"></div>
+
+      <div class="diamond small"><span class="green">◈</span> Change password</div>
       <label class="fieldLabel">current password</label>
       <input id="oldPass" type="password" class="field" />
       <label class="fieldLabel">new password</label>
@@ -129,6 +152,35 @@
       <input id="newPass2" type="password" class="field" />
       <p id="settingsError" class="error hidden"></p>
       <button id="changePassBtn" class="btn primary full">حفظ</button>
+    </div>
+  </div>
+
+  <!-- ================= FORGOT PASSWORD MODAL ================= -->
+  <div id="forgotModal" class="modalOverlay hidden">
+    <div class="modal">
+      <div class="modalHead">
+        <div class="diamond small"><span class="green">◈</span> Forgot password</div>
+        <button class="iconBtn" data-close="forgotModal">✕</button>
+      </div>
+
+      <div id="forgotStep1">
+        <label class="fieldLabel">username</label>
+        <input id="forgotUser" class="field mono" placeholder="_" />
+        <p id="forgotError1" class="error hidden"></p>
+        <button id="forgotFetchBtn" class="btn primary full">التالي</button>
+      </div>
+
+      <div id="forgotStep2" class="hidden">
+        <p id="forgotQuestionText" class="hint"></p>
+        <label class="fieldLabel">الجواب</label>
+        <input id="forgotAnswer" class="field" />
+        <label class="fieldLabel">باسوورد جديد</label>
+        <input id="forgotNewPass" type="password" class="field" />
+        <label class="fieldLabel">تأكيد الباسوورد</label>
+        <input id="forgotNewPass2" type="password" class="field" />
+        <p id="forgotError2" class="error hidden"></p>
+        <button id="forgotResetBtn" class="btn primary full">إعادة تعيين</button>
+      </div>
     </div>
   </div>
 
