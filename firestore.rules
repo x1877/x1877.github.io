@@ -12,7 +12,14 @@ service cloud.firestore {
       allow read: if true;
       allow create: if request.resource.data.keys().hasAll(['passHash','id','friends','createdAt']);
       allow update: if request.resource.data.diff(resource.data).affectedKeys()
-                      .hasOnly(['passHash','friends','displayName','avatar']);
+                      .hasOnly(['passHash','friends','displayName','avatar','email','verified']);
+      allow delete: if false;
+    }
+
+    match /premiumCodes/{code} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasAll(['used']);
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['used','usedBy']);
       allow delete: if false;
     }
 

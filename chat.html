@@ -96,7 +96,14 @@
             <span class="sub mono small">🔒 encrypted</span>
           </div>
           <div id="messagesBox" class="messagesBox"></div>
-          <div id="emojiPanel" class="emojiPanel hidden"></div>
+          <div id="emojiPanel" class="emojiPanel hidden">
+            <div class="emojiTabs">
+              <button id="emojiTabBtn" class="emojiTabBtn active" type="button">Emoji</button>
+              <button id="stickerTabBtn" class="emojiTabBtn" type="button">Stickers</button>
+            </div>
+            <div id="emojiGrid" class="emojiGrid"></div>
+            <div id="stickerGrid" class="emojiGrid hidden"></div>
+          </div>
           <div class="composer">
             <button id="emojiBtn" class="btn outline emojiToggle" type="button">🙂</button>
             <input id="msgInput" class="field grow" placeholder="اكتب رسالتك..." />
@@ -123,7 +130,7 @@
 
   <!-- ================= SETTINGS MODAL ================= -->
   <div id="settingsModal" class="modalOverlay hidden">
-    <div class="modal">
+    <div class="modal modalScroll">
       <div class="modalHead">
         <div class="diamond small"><span class="green">◈</span> Profile</div>
         <button class="iconBtn" data-close="settingsModal">✕</button>
@@ -138,8 +145,30 @@
       </div>
       <label class="fieldLabel">الاسم</label>
       <input id="displayNameInput" class="field" placeholder="اسمك" />
+      <label class="fieldLabel">الإيميل (اختياري)</label>
+      <input id="emailInput" class="field" type="email" placeholder="you@example.com" />
       <p id="profileError" class="error hidden"></p>
       <button id="saveProfileBtn" class="btn primary full">حفظ الملف الشخصي</button>
+
+      <div class="divider"></div>
+
+      <div class="diamond small"><span class="green">◈</span> Verified <span class="badge" id="verifiedBadgePreview" style="display:none">✓</span></div>
+      <p id="verifiedStatusText" class="hint small"></p>
+      <div id="redeemBlock">
+        <label class="fieldLabel">كود التفعيل</label>
+        <div class="row">
+          <input id="redeemCodeInput" class="field mono small" placeholder="XXXX-XXXX-XXXX" />
+          <button id="redeemBtn" class="btn small">تفعيل</button>
+        </div>
+        <p id="redeemError" class="error hidden"></p>
+      </div>
+
+      <div id="adminBlock" class="hidden">
+        <div class="divider"></div>
+        <div class="diamond small"><span class="green">◈</span> Admin — Generate code</div>
+        <button id="genCodeBtn" class="btn outline small full" type="button">توليد كود جديد</button>
+        <p id="genCodeResult" class="hint small mono"></p>
+      </div>
 
       <div class="divider"></div>
 

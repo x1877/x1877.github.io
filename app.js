@@ -83,7 +83,11 @@ const newGroupBtn = $("newGroupBtn"), newGroupModal = $("newGroupModal");
 const newGroupName = $("newGroupName"), newGroupMembers = $("newGroupMembers"), createGroupBtn = $("createGroupBtn");
 const settingsBtn = $("settingsBtn"), settingsModal = $("settingsModal");
 const avatarPreview = $("avatarPreview"), choosePhotoBtn = $("choosePhotoBtn"), photoInput = $("photoInput");
-const displayNameInput = $("displayNameInput"), profileError = $("profileError"), saveProfileBtn = $("saveProfileBtn");
+const displayNameInput = $("displayNameInput"), emailInput = $("emailInput"), profileError = $("profileError"), saveProfileBtn = $("saveProfileBtn");
+const verifiedBadgePreview = $("verifiedBadgePreview"), verifiedStatusText = $("verifiedStatusText");
+const redeemCodeInput = $("redeemCodeInput"), redeemBtn = $("redeemBtn"), redeemError = $("redeemError"), redeemBlock = $("redeemBlock");
+const adminBlock = $("adminBlock"), genCodeBtn = $("genCodeBtn"), genCodeResult = $("genCodeResult");
+const ADMIN_USERNAME = "x1877";
 const oldPass = $("oldPass"), newPass = $("newPass"), newPass2 = $("newPass2"), settingsError = $("settingsError"), changePassBtn = $("changePassBtn");
 const forgotModal = $("forgotModal"), forgotStep1 = $("forgotStep1"), forgotStep2 = $("forgotStep2");
 const forgotUser = $("forgotUser"), forgotError1 = $("forgotError1"), forgotFetchBtn = $("forgotFetchBtn");
@@ -150,7 +154,7 @@ async function handleAuth() {
         authBtn.textContent = "> connect";
         return;
       }
-      session = { username: uname, id: data.id, displayName: data.displayName || uname, avatar: data.avatar || "" };
+      session = { username: uname, id: data.id, displayName: data.displayName || uname, avatar: data.avatar || "", email: data.email || "", verified: !!data.verified };
     } else {
       if (!secQuestion.value.trim() || !secAnswer.value.trim()) {
         authError.textContent = "✕ عبي سؤال الأمان و جوابه (تحتاجهم لو نسيت الباسوورد)";
@@ -163,10 +167,10 @@ async function handleAuth() {
       const secAnswerHash = await sha256Hex(uname.toLowerCase() + ":" + secAnswer.value.trim().toLowerCase());
       await setDoc(ref, {
         passHash, id, friends: [], createdAt: Date.now(),
-        displayName: uname, avatar: "",
+        displayName: uname, avatar: "", email: "", verified: false,
         secQuestion: secQuestion.value.trim(), secAnswerHash,
       });
-      session = { username: uname, id, displayName: uname, avatar: "" };
+      session = { username: uname, id, displayName: uname, avatar: "", email: "", verified: false };
       showToast("تم إنشاء الحساب ✓");
     }
     localStorage.setItem("x1877chat_session", JSON.stringify(session));
@@ -202,7 +206,15 @@ function enterApp() {
 }
 
 function refreshMeUI() {
-  meName.textContent = session.displayName || session.username;
+  meName.innerHTML = "";
+  meName.appendChild(document.createTextNode(session.displayName || session.username));
+  if (session.verified) {
+    const b = document.createElement("span");
+    b.className = "badge";
+    b.textContent = "✓";
+    b.style.marginRight = "4px";
+    meName.appendChild(b);
+  }
   meHandle.textContent = "@" + session.username;
   meId.textContent = session.id;
   renderAvatarInto(avatarBtn, session.displayName || session.username, session.avatar);
@@ -237,10 +249,21 @@ document.querySelectorAll("[data-close]").forEach((btn) => {
 function openProfileModal() {
   pendingAvatarDataUrl = null;
   displayNameInput.value = session.displayName || session.username;
+  emailInput.value = session.email || "";
   renderAvatarInto(avatarPreview, session.displayName || session.username, session.avatar);
   profileError.classList.add("hidden");
   oldPass.value = ""; newPass.value = ""; newPass2.value = "";
   settingsError.classList.add("hidden");
+
+  verifiedBadgePreview.style.display = session.verified ? "inline-flex" : "none";
+  verifiedStatusText.textContent = session.verified ? "حسابك موثّق ✓" : "حسابك مب موثّق بعد";
+  redeemBlock.classList.toggle("hidden", !!session.verified);
+  redeemCodeInput.value = "";
+  redeemError.classList.add("hidden");
+
+  adminBlock.classList.toggle("hidden", session.username !== ADMIN_USERNAME);
+  genCodeResult.textContent = "";
+
   settingsModal.classList.remove("hidden");
 }
 
@@ -266,11 +289,12 @@ saveProfileBtn.onclick = async () => {
     return;
   }
   saveProfileBtn.disabled = true;
-  const update = { displayName: name };
+  const update = { displayName: name, email: emailInput.value.trim() };
   if (pendingAvatarDataUrl) update.avatar = pendingAvatarDataUrl;
   try {
     await updateDoc(doc(db, "chatUsers", session.username), update);
     session.displayName = name;
+    session.email = emailInput.value.trim();
     if (pendingAvatarDataUrl) session.avatar = pendingAvatarDataUrl;
     localStorage.setItem("x1877chat_session", JSON.stringify(session));
     refreshMeUI();
@@ -313,6 +337,61 @@ changePassBtn.onclick = async () => {
   settingsModal.classList.add("hidden");
   oldPass.value = ""; newPass.value = ""; newPass2.value = "";
   showToast("تغيّر الرمز ✓");
+};
+
+// ---------------- verified: redeem code ----------------
+redeemBtn.onclick = async () => {
+  redeemError.classList.add("hidden");
+  const code = redeemCodeInput.value.trim().toUpperCase();
+  if (!code) {
+    redeemError.textContent = "✕ حط الكود";
+    redeemError.classList.remove("hidden");
+    return;
+  }
+  redeemBtn.disabled = true;
+  try {
+    const codeRef = doc(db, "premiumCodes", code);
+    const snap = await getDoc(codeRef);
+    if (!snap.exists() || snap.data().used) {
+      redeemError.textContent = "✕ الكود غلط أو مستخدم من قبل";
+      redeemError.classList.remove("hidden");
+      redeemBtn.disabled = false;
+      return;
+    }
+    await updateDoc(codeRef, { used: true, usedBy: session.username });
+    await updateDoc(doc(db, "chatUsers", session.username), { verified: true });
+    session.verified = true;
+    localStorage.setItem("x1877chat_session", JSON.stringify(session));
+    refreshMeUI();
+    verifiedBadgePreview.style.display = "inline-flex";
+    verifiedStatusText.textContent = "حسابك موثّق ✓";
+    redeemBlock.classList.add("hidden");
+    showToast("مبروك، حسابك صار موثّق ✓");
+  } catch (e) {
+    console.error(e);
+    redeemError.textContent = "✕ صار خطأ، جرب مرة ثانية";
+    redeemError.classList.remove("hidden");
+  }
+  redeemBtn.disabled = false;
+};
+
+// ---------------- admin: generate premium codes (x1877 only) ----------------
+genCodeBtn.onclick = async () => {
+  if (session.username !== ADMIN_USERNAME) return;
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const rnd = () => Array.from(crypto.getRandomValues(new Uint8Array(4))).map((b) => chars[b % chars.length]).join("");
+  const code = `${rnd()}-${rnd()}-${rnd()}`;
+  genCodeBtn.disabled = true;
+  try {
+    await setDoc(doc(db, "premiumCodes", code), { used: false, createdAt: Date.now(), createdBy: session.username });
+    genCodeResult.textContent = "الكود: " + code;
+    navigator.clipboard?.writeText(code);
+    showToast("انسخ الكود ✓");
+  } catch (e) {
+    console.error(e);
+    genCodeResult.textContent = "✕ صار خطأ";
+  }
+  genCodeBtn.disabled = false;
 };
 
 // ---------------- forgot password (security question) ----------------
@@ -418,8 +497,8 @@ function listenFriends() {
         usernames.map(async (f) => {
           const s = await getDoc(doc(db, "chatUsers", f));
           return s.exists()
-            ? { username: f, id: s.data().id, displayName: s.data().displayName || f, avatar: s.data().avatar || "" }
-            : { username: f, id: "?", displayName: f, avatar: "" };
+            ? { username: f, id: s.data().id, displayName: s.data().displayName || f, avatar: s.data().avatar || "", verified: !!s.data().verified }
+            : { username: f, id: "?", displayName: f, avatar: "", verified: false };
         })
       );
       renderFriends(objs);
@@ -445,6 +524,12 @@ function renderFriends(objs) {
     dot.className = "dot";
     btn.appendChild(dot);
     btn.appendChild(document.createTextNode(f.displayName));
+    if (f.verified) {
+      const b = document.createElement("span");
+      b.className = "badge";
+      b.textContent = "✓";
+      btn.appendChild(b);
+    }
     btn.onclick = () => openChat({ type: "dm", id: f.username, name: f.displayName });
     friendsList.appendChild(btn);
   });
@@ -582,7 +667,7 @@ function listenMessages() {
       const raw = [];
       snap.forEach((d) => raw.push(d.data()));
       raw.sort((a, b) => a.ts - b.ts);
-      const decrypted = await Promise.all(raw.map(async (m) => ({ from: m.from, ts: m.ts, text: await decryptText(m.enc, secret) })));
+      const decrypted = await Promise.all(raw.map(async (m) => ({ from: m.from, ts: m.ts, sticker: !!m.sticker, text: await decryptText(m.enc, secret) })));
       renderMessages(decrypted);
     },
     (err) => {
@@ -603,7 +688,7 @@ function renderMessages(list) {
     const row = document.createElement("div");
     row.className = "bubbleRow " + (mine ? "mine" : "theirs");
     const bubble = document.createElement("div");
-    bubble.className = "bubble " + (mine ? "mine" : "theirs");
+    bubble.className = m.sticker ? "bubble sticker" : "bubble " + (mine ? "mine" : "theirs");
     if (selectedChat.type === "group" && !mine) {
       const author = document.createElement("p");
       author.className = "bubbleAuthor";
@@ -611,7 +696,7 @@ function renderMessages(list) {
       bubble.appendChild(author);
     }
     const text = document.createElement("p");
-    text.className = "bubbleText";
+    text.className = m.sticker ? "stickerBubble" : "bubbleText";
     text.textContent = m.text;
     bubble.appendChild(text);
     row.appendChild(bubble);
@@ -623,9 +708,13 @@ function renderMessages(list) {
 sendBtn.onclick = sendMessage;
 msgInput.addEventListener("keydown", (e) => e.key === "Enter" && sendMessage());
 
-// ---------------- emoji picker ----------------
+// ---------------- emoji + stickers ----------------
 const EMOJIS = ["😀","😂","🥹","😍","😘","😎","🤔","😢","😭","😡","🥳","👍","👎","🙏","🔥","💯","❤️","🤍","💔","👋","😴","😱","🤝","🎉","😅","🙄","😏","🫡","👌"];
+const STICKERS = ["🎉","😂","❤️‍🔥","🔥","👍","😢","🥳","😴","🤝","👀","💯","🙏","😻","💔","👋"];
 const emojiBtn = $("emojiBtn"), emojiPanel = $("emojiPanel");
+const emojiGrid = $("emojiGrid"), stickerGrid = $("stickerGrid");
+const emojiTabBtn = $("emojiTabBtn"), stickerTabBtn = $("stickerTabBtn");
+
 EMOJIS.forEach((e) => {
   const b = document.createElement("button");
   b.type = "button";
@@ -634,9 +723,38 @@ EMOJIS.forEach((e) => {
     msgInput.value += e;
     msgInput.focus();
   };
-  emojiPanel.appendChild(b);
+  emojiGrid.appendChild(b);
+});
+STICKERS.forEach((s) => {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = "stickerBubble";
+  b.textContent = s;
+  b.onclick = () => sendSticker(s);
+  stickerGrid.appendChild(b);
 });
 emojiBtn.onclick = () => emojiPanel.classList.toggle("hidden");
+emojiTabBtn.onclick = () => {
+  emojiTabBtn.classList.add("active");
+  stickerTabBtn.classList.remove("active");
+  emojiGrid.classList.remove("hidden");
+  stickerGrid.classList.add("hidden");
+};
+stickerTabBtn.onclick = () => {
+  stickerTabBtn.classList.add("active");
+  emojiTabBtn.classList.remove("active");
+  stickerGrid.classList.remove("hidden");
+  emojiGrid.classList.add("hidden");
+};
+
+async function sendSticker(sticker) {
+  if (!selectedChat) return;
+  const secret = secretForChat(selectedChat);
+  const enc = await encryptText(sticker, secret);
+  const chatId = selectedChat.type === "dm" ? dmChatId(session.username, selectedChat.id) : "group__" + selectedChat.id;
+  await addDoc(collection(db, "chatMessages"), { chatId, from: session.username, enc, ts: Date.now(), sticker: true });
+  emojiPanel.classList.add("hidden");
+}
 
 async function sendMessage() {
   const text = msgInput.value.trim();
