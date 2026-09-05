@@ -74,6 +74,10 @@
               <button id="addFriendBtn" class="btn small">+</button>
             </div>
           </div>
+          <div id="requestsSection" class="reqSection hidden">
+            <div class="reqSectionLabel">طلبات الصداقة</div>
+            <div id="requestsList"></div>
+          </div>
           <div id="friendsList" class="list"></div>
         </div>
 
@@ -92,8 +96,10 @@
 
         <div id="chatWindow" class="chatWindow hidden">
           <div class="chatHeader">
-            <p id="chatTitle" class="mono chatTitleText"></p>
-            <span class="sub mono small">🔒 encrypted</span>
+            <div class="chatHeaderText">
+              <p id="chatTitle" class="mono chatTitleText"></p>
+              <p id="chatSubStatus" class="chatSubStatus"></p>
+            </div>
           </div>
           <div id="messagesBox" class="messagesBox"></div>
           <div id="emojiPanel" class="emojiPanel hidden">
@@ -103,6 +109,10 @@
             </div>
             <div id="emojiGrid" class="emojiGrid"></div>
             <div id="stickerGrid" class="emojiGrid hidden"></div>
+          </div>
+          <div id="replyBar" class="replyBar hidden">
+            <div class="replyBarText"><span id="replyBarLabel" class="replyBarLabel"></span><span id="replyBarPreview"></span></div>
+            <button id="replyBarClose" class="replyBarClose" type="button">✕</button>
           </div>
           <div class="composer">
             <button id="emojiBtn" class="btn outline emojiToggle" type="button">🙂</button>

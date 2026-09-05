@@ -90,8 +90,25 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-famil
 .listItem:hover{background:rgba(255,255,255,.05);}
 .listItem.active{background:var(--panel2);}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;}
+.dot.offline{background:var(--sub);}
 .groupMeta{color:var(--sub);font-size:11px;display:block;}
 .emptyHint{color:var(--sub);font-size:12px;padding:12px;text-align:center;}
+
+/* ---------- Friend requests ---------- */
+.reqSection{padding:8px 8px 0;}
+.reqSectionLabel{font-family:var(--mono);font-size:10px;color:var(--sub);letter-spacing:.08em;
+  padding:0 4px 6px;}
+.friendReqRow{display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:8px;background:rgba(57,255,157,.05);border:1px solid var(--greenDim);
+  border-radius:10px;margin-bottom:6px;font-size:12px;}
+.friendReqName{display:flex;align-items:center;gap:6px;min-width:0;}
+.friendReqName span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.friendReqActions{display:flex;gap:6px;flex-shrink:0;}
+.tinyBtn{background:none;border:1px solid var(--line);border-radius:6px;padding:4px 9px;
+  font-size:11px;cursor:pointer;color:var(--text);}
+.tinyBtn.accept{color:var(--green);border-color:var(--greenDim);}
+.tinyBtn.decline{color:var(--danger);border-color:var(--danger);}
+.reqPendingTag{font-size:10px;color:var(--sub);}
 
 /* ---------- Chat area ---------- */
 .chatArea{flex:1;display:flex;flex-direction:column;min-width:0;}
@@ -99,17 +116,42 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-famil
 .chatWindow{flex:1;display:flex;flex-direction:column;min-height:0;}
 .chatHeader{border-bottom:1px solid var(--line);background:var(--panel);padding:12px 20px;
   display:flex;align-items:center;justify-content:space-between;}
+.chatHeaderText{display:flex;flex-direction:column;gap:2px;}
 .chatTitleText{font-weight:700;margin:0;}
+.chatSubStatus{font-size:11px;color:var(--sub);margin:0;min-height:14px;}
+.chatSubStatus.typing{color:var(--green);}
 .messagesBox{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:10px;}
-.bubbleRow{display:flex;}
-.bubbleRow.mine{justify-content:flex-start;}
-.bubbleRow.theirs{justify-content:flex-end;}
-.bubble{max-width:70%;border:1px solid var(--line);border-radius:12px;padding:8px 14px;font-size:13px;}
+.bubbleRow{display:flex;flex-direction:column;}
+.bubbleRow.mine{align-items:flex-start;}
+.bubbleRow.theirs{align-items:flex-end;}
+.bubble{max-width:70%;border:1px solid var(--line);border-radius:12px;padding:8px 14px;font-size:13px;position:relative;}
 .bubble.mine{background:#102019;}
 .bubble.theirs{background:var(--panel2);}
 .bubble.sticker{background:none;border:none;padding:0;}
+.bubble.deleted{opacity:.55;font-style:italic;}
 .bubbleAuthor{color:var(--gold);font-family:var(--mono);font-size:10px;font-weight:700;margin:0 0 2px;}
 .bubbleText{margin:0;white-space:pre-wrap;word-break:break-word;}
+.bubbleMeta{display:flex;align-items:center;gap:4px;justify-content:flex-end;margin-top:3px;}
+.editedTag{color:var(--sub);font-size:10px;}
+.seenTicks{font-size:11px;color:var(--sub);}
+.seenTicks.seen{color:var(--green);}
+.replyQuote{border-right:2px solid var(--green);padding:2px 8px;margin-bottom:6px;
+  font-size:11px;color:var(--sub);background:rgba(255,255,255,.03);border-radius:4px;}
+.replyQuoteAuthor{color:var(--gold);font-weight:700;display:block;font-size:10px;}
+.msgActions{display:flex;gap:10px;margin-top:4px;opacity:0;transition:opacity .15s;}
+.bubbleRow:hover .msgActions{opacity:1;}
+.msgActionBtn{background:none;border:none;color:var(--sub);font-size:11px;cursor:pointer;padding:0;}
+.msgActionBtn:hover{color:var(--green);}
+.msgActionBtn.danger:hover{color:var(--danger);}
+
+.replyBar{display:flex;align-items:center;justify-content:space-between;background:var(--panel2);
+  border-top:1px solid var(--line);padding:8px 14px;font-size:12px;gap:10px;}
+.replyBarText{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+.replyBarLabel{color:var(--green);font-weight:700;margin-left:4px;}
+.replyBarClose{background:none;border:none;color:var(--sub);font-size:14px;cursor:pointer;flex-shrink:0;}
+.editingBar{background:rgba(224,183,78,.08);}
+.editingBar .replyBarLabel{color:var(--gold);}
+
 .composer{border-top:1px solid var(--line);padding:14px;display:flex;gap:8px;}
 .emojiToggle{padding:11px 12px;font-size:16px;line-height:1;}
 .emojiPanel{border-top:1px solid var(--line);background:var(--panel2);}

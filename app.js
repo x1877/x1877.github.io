@@ -1,11 +1,18 @@
 import { db } from "./firebase-config.js";
 import {
-  doc, getDoc, setDoc, updateDoc, getDocs,
+  doc, getDoc, setDoc, updateDoc, getDocs, deleteField,
   collection, query, where, onSnapshot,
-  addDoc, increment,
+  addDoc, increment, arrayUnion, arrayRemove,
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 // ---------------- crypto helpers ----------------
+// NOTE: this is basic obfuscation of message text at rest in Firestore, not
+// real end-to-end encryption — the "secret" is derived from the same chatId
+// that is stored in plain sight on every message document, so anyone who can
+// read the raw documents (e.g. from the Firebase console) can derive the same
+// key. It stops a casual reader of the database from seeing plaintext, but it
+// is NOT a security boundary against a motivated attacker. Don't advertise it
+// as "encrypted" in the UI.
 const sha256Hex = async (str) => {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
   return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
@@ -21,6 +28,7 @@ const encryptText = async (text, secret) => {
   return { iv: Array.from(iv), data: Array.from(new Uint8Array(cipherBuf)) };
 };
 const decryptText = async (payload, secret) => {
+  if (!payload) return "";
   try {
     const key = await deriveAesKey(secret);
     const iv = new Uint8Array(payload.iv);
@@ -32,6 +40,7 @@ const decryptText = async (payload, secret) => {
   }
 };
 const dmChatId = (a, b) => "dm__" + [a, b].sort().join("__");
+const chatIdFor = (chat) => (chat.type === "dm" ? dmChatId(session.username, chat.id) : "group__" + chat.id);
 const secretForChat = (chat) => (chat.type === "dm" ? dmChatId(session.username, chat.id) : "group__" + chat.id);
 
 // compress an uploaded image file into a small square JPEG data URL
@@ -58,6 +67,9 @@ const fileToAvatarDataUrl = (file, maxSize = 128, quality = 0.75) =>
     reader.readAsDataURL(file);
   });
 
+const escapeHtml = (s) =>
+  String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
 // ---------------- state ----------------
 let session = null; // {username, id, displayName, avatar}
 let selectedChat = null; // {type:'dm'|'group', id, name}
@@ -65,8 +77,21 @@ let friendsUnsub = null;
 let groupsUnsub = null;
 let messagesUnsub = null;
 let presenceUnsub = null;
+let visitsUnsub = null;
+let readsUnsub = null;
+let typingUnsub = null;
+let friendPresenceUnsub = null;
 let pendingAvatarDataUrl = null;
 let forgotTargetUsername = null;
+let presenceIntervalId = null;
+let typingClearTimeoutId = null;
+
+let editingMessageId = null; // set while editing an existing message
+let replyTarget = null; // {id, from, preview} set while composing a reply
+let currentReadsMap = {}; // { username: lastReadTs } for the open chat
+let lastRenderedMessages = []; // decrypted list for the open chat, for re-render on read/typing updates
+let friendIsTyping = false;
+let friendIsOnline = null; // null = n/a (group chats), true/false for dm
 
 // ---------------- DOM refs ----------------
 const $ = (id) => document.getElementById(id);
@@ -76,6 +101,7 @@ const secQuestion = $("secQuestion"), secAnswer = $("secAnswer"), forgotLink = $
 const meName = $("meName"), meHandle = $("meHandle"), meId = $("meId"), avatarBtn = $("avatarBtn");
 const totalVisitsEl = $("totalVisits"), onlineCountEl = $("onlineCount");
 const friendsList = $("friendsList"), groupsList = $("groupsList");
+const requestsSection = $("requestsSection"), requestsList = $("requestsList");
 const addFriendInput = $("addFriendInput"), addFriendBtn = $("addFriendBtn");
 const tabFriends = $("tabFriends"), tabGroups = $("tabGroups");
 const friendsPanel = $("friendsPanel"), groupsPanel = $("groupsPanel");
@@ -94,8 +120,9 @@ const forgotUser = $("forgotUser"), forgotError1 = $("forgotError1"), forgotFetc
 const forgotQuestionText = $("forgotQuestionText"), forgotAnswer = $("forgotAnswer");
 const forgotNewPass = $("forgotNewPass"), forgotNewPass2 = $("forgotNewPass2"), forgotError2 = $("forgotError2"), forgotResetBtn = $("forgotResetBtn");
 const logoutBtn = $("logoutBtn"), copyIdBtn = $("copyIdBtn");
-const emptyState = $("emptyState"), chatWindow = $("chatWindow"), chatTitle = $("chatTitle");
+const emptyState = $("emptyState"), chatWindow = $("chatWindow"), chatTitle = $("chatTitle"), chatSubStatus = $("chatSubStatus");
 const messagesBox = $("messagesBox"), msgInput = $("msgInput"), sendBtn = $("sendBtn");
+const replyBar = $("replyBar"), replyBarLabel = $("replyBarLabel"), replyBarPreview = $("replyBarPreview"), replyBarClose = $("replyBarClose");
 const toast = $("toast");
 
 const showToast = (t) => {
@@ -154,7 +181,10 @@ async function handleAuth() {
         authBtn.textContent = "> connect";
         return;
       }
-      session = { username: uname, id: data.id, displayName: data.displayName || uname, avatar: data.avatar || "", email: data.email || "", verified: !!data.verified };
+      session = {
+        username: uname, id: data.id, displayName: data.displayName || uname,
+        avatar: data.avatar || "", email: data.email || "", verified: !!data.verified,
+      };
     } else {
       if (!secQuestion.value.trim() || !secAnswer.value.trim()) {
         authError.textContent = "✕ عبي سؤال الأمان و جوابه (تحتاجهم لو نسيت الباسوورد)";
@@ -166,10 +196,13 @@ async function handleAuth() {
       const id = String(Math.floor(100000 + Math.random() * 899999));
       const secAnswerHash = await sha256Hex(uname.toLowerCase() + ":" + secAnswer.value.trim().toLowerCase());
       await setDoc(ref, {
-        passHash, id, friends: [], createdAt: Date.now(),
+        passHash, id, friends: [], incomingRequests: [], outgoingRequests: [], createdAt: Date.now(),
         displayName: uname, avatar: "", email: "", verified: false,
         secQuestion: secQuestion.value.trim(), secAnswerHash,
       });
+      // small lookup doc so "add friend by #id" doesn't require scanning the
+      // whole chatUsers collection (see addFriend()).
+      await setDoc(doc(db, "chatUserIds", id), { username: uname });
       session = { username: uname, id, displayName: uname, avatar: "", email: "", verified: false };
       showToast("تم إنشاء الحساب ✓");
     }
@@ -228,6 +261,12 @@ logoutBtn.onclick = () => {
   if (groupsUnsub) groupsUnsub();
   if (messagesUnsub) messagesUnsub();
   if (presenceUnsub) presenceUnsub();
+  if (visitsUnsub) visitsUnsub();
+  if (readsUnsub) readsUnsub();
+  if (typingUnsub) typingUnsub();
+  if (friendPresenceUnsub) friendPresenceUnsub();
+  if (presenceIntervalId) { clearInterval(presenceIntervalId); presenceIntervalId = null; }
+  if (typingClearTimeoutId) { clearTimeout(typingClearTimeoutId); typingClearTimeoutId = null; }
   authScreen.classList.remove("hidden");
   appScreen.classList.add("hidden");
   authUser.value = "";
@@ -376,6 +415,12 @@ redeemBtn.onclick = async () => {
 };
 
 // ---------------- admin: generate premium codes (x1877 only) ----------------
+// NOTE: this check is purely client-side UI — it hides/shows a button, it does
+// NOT protect the "premiumCodes" collection. Without Firebase Auth + Firestore
+// security rules that verify identity server-side, anyone who edits their own
+// localStorage session (or calls Firestore directly) can still write codes.
+// Locking this down for real requires the Auth work that was intentionally
+// skipped for now — treat this button as convenience, not a security boundary.
 genCodeBtn.onclick = async () => {
   if (session.username !== ADMIN_USERNAME) return;
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -453,7 +498,8 @@ async function bumpVisitorCount() {
   try {
     await setDoc(ref, { totalVisits: increment(1) }, { merge: true });
   } catch (e) { console.error(e); }
-  onSnapshot(ref, (snap) => {
+  if (visitsUnsub) visitsUnsub(); // avoid stacking listeners across repeated logins in one page life
+  visitsUnsub = onSnapshot(ref, (snap) => {
     totalVisitsEl.textContent = snap.exists() ? (snap.data().totalVisits ?? 0) : 0;
   });
 }
@@ -462,7 +508,8 @@ function startPresenceHeartbeat() {
   const ref = doc(db, "chatPresence", session.username);
   const beat = () => setDoc(ref, { ts: Date.now() }).catch(() => {});
   beat();
-  setInterval(beat, 10000);
+  if (presenceIntervalId) clearInterval(presenceIntervalId); // fixes: old interval used to survive logout and keep pinging as the previous user
+  presenceIntervalId = setInterval(beat, 10000);
 
   if (presenceUnsub) presenceUnsub();
   presenceUnsub = onSnapshot(collection(db, "chatPresence"), (snap) => {
@@ -492,7 +539,11 @@ function listenFriends() {
     ref,
     async (snap) => {
       if (!snap.exists()) return;
-      const usernames = snap.data().friends || [];
+      const data = snap.data();
+      const usernames = data.friends || [];
+      const incoming = data.incomingRequests || [];
+      const outgoing = data.outgoingRequests || [];
+
       const objs = await Promise.all(
         usernames.map(async (f) => {
           const s = await getDoc(doc(db, "chatUsers", f));
@@ -501,7 +552,15 @@ function listenFriends() {
             : { username: f, id: "?", displayName: f, avatar: "", verified: false };
         })
       );
-      renderFriends(objs);
+      const incomingObjs = await Promise.all(
+        incoming.map(async (f) => {
+          const s = await getDoc(doc(db, "chatUsers", f));
+          return { username: f, displayName: s.exists() ? (s.data().displayName || f) : f };
+        })
+      );
+
+      renderFriends(objs, outgoing);
+      renderRequests(incomingObjs);
       renderGroupMemberChecklist(objs);
     },
     (err) => {
@@ -511,9 +570,68 @@ function listenFriends() {
   );
 }
 
-function renderFriends(objs) {
+function renderRequests(incomingObjs) {
+  requestsList.innerHTML = "";
+  if (incomingObjs.length === 0) {
+    requestsSection.classList.add("hidden");
+    return;
+  }
+  requestsSection.classList.remove("hidden");
+  incomingObjs.forEach((r) => {
+    const row = document.createElement("div");
+    row.className = "friendReqRow";
+    const nameWrap = document.createElement("div");
+    nameWrap.className = "friendReqName";
+    nameWrap.appendChild(document.createTextNode(r.displayName));
+    const actions = document.createElement("div");
+    actions.className = "friendReqActions";
+    const acceptBtn = document.createElement("button");
+    acceptBtn.className = "tinyBtn accept";
+    acceptBtn.textContent = "قبول";
+    acceptBtn.onclick = () => acceptRequest(r.username);
+    const declineBtn = document.createElement("button");
+    declineBtn.className = "tinyBtn decline";
+    declineBtn.textContent = "رفض";
+    declineBtn.onclick = () => declineRequest(r.username);
+    actions.appendChild(acceptBtn);
+    actions.appendChild(declineBtn);
+    row.appendChild(nameWrap);
+    row.appendChild(actions);
+    requestsList.appendChild(row);
+  });
+}
+
+async function acceptRequest(fromUsername) {
+  try {
+    await updateDoc(doc(db, "chatUsers", session.username), {
+      incomingRequests: arrayRemove(fromUsername),
+      friends: arrayUnion(fromUsername),
+    });
+    await updateDoc(doc(db, "chatUsers", fromUsername), {
+      outgoingRequests: arrayRemove(session.username),
+      friends: arrayUnion(session.username),
+    });
+    showToast("صار صديقك ✓");
+  } catch (e) {
+    console.error(e);
+    showToast("✕ صار خطأ");
+  }
+}
+
+async function declineRequest(fromUsername) {
+  try {
+    await updateDoc(doc(db, "chatUsers", session.username), { incomingRequests: arrayRemove(fromUsername) });
+    await updateDoc(doc(db, "chatUsers", fromUsername), { outgoingRequests: arrayRemove(session.username) });
+    showToast("تم رفض الطلب");
+  } catch (e) {
+    console.error(e);
+    showToast("✕ صار خطأ");
+  }
+}
+
+function renderFriends(objs, outgoing) {
   friendsList.innerHTML = "";
-  if (objs.length === 0) {
+  if (objs.length === 0 && (!outgoing || outgoing.length === 0)) {
     friendsList.innerHTML = `<p class="emptyHint">ما عندك أصدقاء بعد</p>`;
     return;
   }
@@ -533,6 +651,13 @@ function renderFriends(objs) {
     btn.onclick = () => openChat({ type: "dm", id: f.username, name: f.displayName });
     friendsList.appendChild(btn);
   });
+  (outgoing || []).forEach((u) => {
+    const row = document.createElement("div");
+    row.className = "listItem";
+    row.style.cursor = "default";
+    row.innerHTML = `<span class="dot offline"></span>${escapeHtml(u)}<span class="reqPendingTag">⏳ بانتظار الرد</span>`;
+    friendsList.appendChild(row);
+  });
 }
 
 addFriendBtn.onclick = addFriend;
@@ -542,33 +667,38 @@ async function addFriend() {
   const q = addFriendInput.value.trim();
   if (!q) return;
   if (q === session.username) return showToast("ما تكدر تضيف نفسك");
+
   let targetUsername = q;
   let targetSnap = await getDoc(doc(db, "chatUsers", q));
   if (!targetSnap.exists()) {
-    // search by id — small user bases only; fine for a personal site
-    const all = await getDocsOnce("chatUsers");
-    const match = all.find((u) => u.data.id === q);
-    if (!match) return showToast("ما لكيت هذا اليوزر");
-    targetUsername = match.id;
+    // look up by #id via a small dedicated doc instead of scanning the whole
+    // chatUsers collection (which used to expose every user's data to any
+    // client just to resolve one ID).
+    const idSnap = await getDoc(doc(db, "chatUserIds", q));
+    if (!idSnap.exists()) return showToast("ما لكيت هذا اليوزر");
+    targetUsername = idSnap.data().username;
     targetSnap = await getDoc(doc(db, "chatUsers", targetUsername));
+    if (!targetSnap.exists()) return showToast("ما لكيت هذا اليوزر");
   }
+
   const meRef = doc(db, "chatUsers", session.username);
   const meSnap = await getDoc(meRef);
   const meData = meSnap.data();
-  if ((meData.friends || []).includes(targetUsername)) return showToast("هذا صديقك خلص");
-  const targetData = targetSnap.data();
-  await updateDoc(meRef, { friends: [...(meData.friends || []), targetUsername] });
-  await updateDoc(doc(db, "chatUsers", targetUsername), { friends: [...(targetData.friends || []), session.username] });
-  addFriendInput.value = "";
-  showToast("زاد عندك صديق");
-}
 
-// one-off full collection read (used only for id search)
-async function getDocsOnce(collName) {
-  const snap = await getDocs(collection(db, collName));
-  const out = [];
-  snap.forEach((d) => out.push({ id: d.id, data: d.data() }));
-  return out;
+  if ((meData.friends || []).includes(targetUsername)) return showToast("هذا صديقك خلص");
+  if ((meData.outgoingRequests || []).includes(targetUsername)) return showToast("الطلب مرسل خلص، بانتظار الرد");
+
+  // if they already sent me a request, accept it instead of creating a duplicate
+  if ((meData.incomingRequests || []).includes(targetUsername)) {
+    await acceptRequest(targetUsername);
+    addFriendInput.value = "";
+    return;
+  }
+
+  await updateDoc(meRef, { outgoingRequests: arrayUnion(targetUsername) });
+  await updateDoc(doc(db, "chatUsers", targetUsername), { incomingRequests: arrayUnion(session.username) });
+  addFriendInput.value = "";
+  showToast("تم إرسال طلب الصداقة");
 }
 
 // ---------------- groups ----------------
@@ -598,8 +728,8 @@ function renderGroups(groups) {
   groups.forEach((g) => {
     const btn = document.createElement("button");
     btn.className = "listItem" + (selectedChat?.id === g.id && selectedChat?.type === "group" ? " active" : "");
-    btn.innerHTML = `# ${g.name}<span class="groupMeta">${(g.members || []).length} أعضاء</span>`;
-    btn.onclick = () => openChat({ type: "group", id: g.id, name: g.name });
+    btn.innerHTML = `# ${escapeHtml(g.name)}<span class="groupMeta">${(g.members || []).length} أعضاء</span>`;
+    btn.onclick = () => openChat({ type: "group", id: g.id, name: g.name, memberCount: (g.members || []).length });
     groupsList.appendChild(btn);
   });
 }
@@ -645,16 +775,96 @@ createGroupBtn.onclick = async () => {
 // ---------------- chat / messages ----------------
 function openChat(chat) {
   selectedChat = chat;
+  editingMessageId = null;
+  replyTarget = null;
+  hideComposerBar();
   emptyState.classList.add("hidden");
   chatWindow.classList.remove("hidden");
   chatTitle.textContent = (chat.type === "group" ? "#" : "@") + chat.name;
   messagesBox.innerHTML = "";
+  currentReadsMap = {};
   document.querySelectorAll("#friendsList .listItem, #groupsList .listItem").forEach((el) => el.classList.remove("active"));
+
+  if (readsUnsub) readsUnsub();
+  if (typingUnsub) typingUnsub();
+  if (friendPresenceUnsub) friendPresenceUnsub();
+
+  if (chat.type === "group") {
+    friendIsOnline = null;
+    chatSubStatus.textContent = `${chat.memberCount ?? ""} أعضاء`.trim();
+    chatSubStatus.classList.remove("typing");
+  } else {
+    chatSubStatus.textContent = "";
+    listenFriendPresence(chat.id);
+  }
+
   listenMessages();
+  listenReads();
+  listenTyping();
 }
 
+function listenFriendPresence(otherUsername) {
+  friendPresenceUnsub = onSnapshot(doc(db, "chatPresence", otherUsername), (snap) => {
+    const ts = snap.exists() ? snap.data().ts : 0;
+    friendIsOnline = !!ts && Date.now() - ts < 25000;
+    renderChatSubStatus();
+  });
+}
+
+function renderChatSubStatus() {
+  if (!selectedChat) return;
+  if (selectedChat.type === "group") return; // static member count already set
+  if (friendIsTyping) {
+    chatSubStatus.textContent = "يكتب...";
+    chatSubStatus.classList.add("typing");
+  } else {
+    chatSubStatus.classList.remove("typing");
+    chatSubStatus.textContent = friendIsOnline ? "متصل الآن" : "غير متصل";
+  }
+}
+
+function listenReads() {
+  const chatId = chatIdFor(selectedChat);
+  markChatRead(chatId);
+  readsUnsub = onSnapshot(doc(db, "chatReads", chatId), (snap) => {
+    currentReadsMap = snap.exists() ? snap.data() : {};
+    renderMessages(lastRenderedMessages);
+  });
+}
+
+function markChatRead(chatId) {
+  setDoc(doc(db, "chatReads", chatId), { [session.username]: Date.now() }, { merge: true }).catch(() => {});
+}
+
+function listenTyping() {
+  const chatId = chatIdFor(selectedChat);
+  typingUnsub = onSnapshot(doc(db, "chatTyping", chatId), (snap) => {
+    const data = snap.exists() ? snap.data() : {};
+    const now = Date.now();
+    friendIsTyping = Object.entries(data).some(([user, ts]) => user !== session.username && ts && now - ts < 4000);
+    renderChatSubStatus();
+  });
+}
+
+let lastTypingSentAt = 0;
+msgInput.addEventListener("input", () => {
+  if (!selectedChat) return;
+  const now = Date.now();
+  if (now - lastTypingSentAt > 1500) {
+    lastTypingSentAt = now;
+    const chatId = chatIdFor(selectedChat);
+    setDoc(doc(db, "chatTyping", chatId), { [session.username]: now }, { merge: true }).catch(() => {});
+  }
+  if (typingClearTimeoutId) clearTimeout(typingClearTimeoutId);
+  typingClearTimeoutId = setTimeout(() => {
+    if (!selectedChat) return;
+    const chatId = chatIdFor(selectedChat);
+    setDoc(doc(db, "chatTyping", chatId), { [session.username]: 0 }, { merge: true }).catch(() => {});
+  }, 3000);
+});
+
 function listenMessages() {
-  const chatId = selectedChat.type === "dm" ? dmChatId(session.username, selectedChat.id) : "group__" + selectedChat.id;
+  const chatId = chatIdFor(selectedChat);
   const secret = secretForChat(selectedChat);
   // NOTE: no orderBy here on purpose — where() + orderBy() on a different field
   // needs a composite Firestore index, and without it the listener fails silently.
@@ -665,10 +875,28 @@ function listenMessages() {
     q,
     async (snap) => {
       const raw = [];
-      snap.forEach((d) => raw.push(d.data()));
+      snap.forEach((d) => raw.push({ id: d.id, ...d.data() }));
       raw.sort((a, b) => a.ts - b.ts);
-      const decrypted = await Promise.all(raw.map(async (m) => ({ from: m.from, ts: m.ts, sticker: !!m.sticker, text: await decryptText(m.enc, secret) })));
+      const decrypted = await Promise.all(
+        raw.map(async (m) => {
+          const base = {
+            id: m.id, from: m.from, ts: m.ts, sticker: !!m.sticker,
+            edited: !!m.edited, deleted: !!m.deleted,
+          };
+          if (m.deleted) return { ...base, text: "" };
+          base.text = await decryptText(m.enc, secret);
+          if (m.replyTo) {
+            base.replyTo = {
+              id: m.replyTo.id, from: m.replyTo.from,
+              preview: await decryptText(m.replyTo.encPreview, secret),
+            };
+          }
+          return base;
+        })
+      );
+      lastRenderedMessages = decrypted;
       renderMessages(decrypted);
+      if (selectedChat) markChatRead(chatIdFor(selectedChat));
     },
     (err) => {
       console.error("messages listener error", err);
@@ -683,26 +911,135 @@ function renderMessages(list) {
     messagesBox.innerHTML = `<p class="emptyHint">ابعث أول رسالة</p>`;
     return;
   }
+  const otherUsername = selectedChat?.type === "dm" ? selectedChat.id : null;
+  const otherReadTs = otherUsername ? (currentReadsMap[otherUsername] || 0) : null;
+
   list.forEach((m) => {
     const mine = m.from === session.username;
     const row = document.createElement("div");
     row.className = "bubbleRow " + (mine ? "mine" : "theirs");
+
     const bubble = document.createElement("div");
-    bubble.className = m.sticker ? "bubble sticker" : "bubble " + (mine ? "mine" : "theirs");
-    if (selectedChat.type === "group" && !mine) {
+    bubble.className = (m.sticker ? "bubble sticker" : "bubble " + (mine ? "mine" : "theirs")) + (m.deleted ? " deleted" : "");
+
+    if (selectedChat.type === "group" && !mine && !m.sticker) {
       const author = document.createElement("p");
       author.className = "bubbleAuthor";
       author.textContent = m.from;
       bubble.appendChild(author);
     }
+
+    if (m.replyTo && !m.deleted) {
+      const quote = document.createElement("div");
+      quote.className = "replyQuote";
+      const author = document.createElement("span");
+      author.className = "replyQuoteAuthor";
+      author.textContent = m.replyTo.from;
+      quote.appendChild(author);
+      quote.appendChild(document.createTextNode(m.replyTo.preview));
+      bubble.appendChild(quote);
+    }
+
     const text = document.createElement("p");
     text.className = m.sticker ? "stickerBubble" : "bubbleText";
-    text.textContent = m.text;
+    text.textContent = m.deleted ? "🗑 تم حذف هذي الرسالة" : m.text;
     bubble.appendChild(text);
-    row.appendChild(bubble);
+
+    if (!m.sticker) {
+      const meta = document.createElement("div");
+      meta.className = "bubbleMeta";
+      if (m.edited && !m.deleted) {
+        const tag = document.createElement("span");
+        tag.className = "editedTag";
+        tag.textContent = "(معدّلة)";
+        meta.appendChild(tag);
+      }
+      if (mine && otherUsername && !m.deleted) {
+        const ticks = document.createElement("span");
+        const seen = otherReadTs && m.ts <= otherReadTs;
+        ticks.className = "seenTicks" + (seen ? " seen" : "");
+        ticks.textContent = seen ? "✓✓" : "✓";
+        meta.appendChild(ticks);
+      }
+      if (meta.childNodes.length) bubble.appendChild(meta);
+    }
+
+    if (!m.deleted) {
+      const actions = document.createElement("div");
+      actions.className = "msgActions";
+      const replyBtn = document.createElement("button");
+      replyBtn.className = "msgActionBtn";
+      replyBtn.type = "button";
+      replyBtn.textContent = "↩ رد";
+      replyBtn.onclick = () => startReply(m);
+      actions.appendChild(replyBtn);
+      if (mine && !m.sticker) {
+        const editBtn = document.createElement("button");
+        editBtn.className = "msgActionBtn";
+        editBtn.type = "button";
+        editBtn.textContent = "✎ تعديل";
+        editBtn.onclick = () => startEdit(m);
+        actions.appendChild(editBtn);
+        const delBtn = document.createElement("button");
+        delBtn.className = "msgActionBtn danger";
+        delBtn.type = "button";
+        delBtn.textContent = "🗑 حذف";
+        delBtn.onclick = () => deleteMessage(m);
+        actions.appendChild(delBtn);
+      }
+      row.appendChild(bubble);
+      row.appendChild(actions);
+    } else {
+      row.appendChild(bubble);
+    }
+
     messagesBox.appendChild(row);
   });
   messagesBox.scrollTop = messagesBox.scrollHeight;
+}
+
+function startReply(m) {
+  editingMessageId = null;
+  replyTarget = { id: m.id, from: m.from, preview: m.text.slice(0, 60) };
+  replyBar.classList.remove("hidden", "editingBar");
+  replyBarLabel.textContent = "الرد على " + m.from + ":";
+  replyBarPreview.textContent = replyTarget.preview;
+  msgInput.focus();
+}
+
+function startEdit(m) {
+  replyTarget = null;
+  editingMessageId = m.id;
+  replyBar.classList.remove("hidden");
+  replyBar.classList.add("editingBar");
+  replyBarLabel.textContent = "تعديل الرسالة:";
+  replyBarPreview.textContent = m.text.slice(0, 60);
+  msgInput.value = m.text;
+  msgInput.focus();
+}
+
+function hideComposerBar() {
+  replyBar.classList.add("hidden");
+  replyBar.classList.remove("editingBar");
+  replyBarLabel.textContent = "";
+  replyBarPreview.textContent = "";
+}
+
+replyBarClose.onclick = () => {
+  editingMessageId = null;
+  replyTarget = null;
+  msgInput.value = "";
+  hideComposerBar();
+};
+
+async function deleteMessage(m) {
+  if (!confirm("تحذف هذي الرسالة؟")) return;
+  try {
+    await updateDoc(doc(db, "chatMessages", m.id), { deleted: true, enc: null, replyTo: deleteField() });
+  } catch (e) {
+    console.error(e);
+    showToast("✕ ما كدرت أحذف الرسالة");
+  }
 }
 
 sendBtn.onclick = sendMessage;
@@ -751,7 +1088,7 @@ async function sendSticker(sticker) {
   if (!selectedChat) return;
   const secret = secretForChat(selectedChat);
   const enc = await encryptText(sticker, secret);
-  const chatId = selectedChat.type === "dm" ? dmChatId(session.username, selectedChat.id) : "group__" + selectedChat.id;
+  const chatId = chatIdFor(selectedChat);
   await addDoc(collection(db, "chatMessages"), { chatId, from: session.username, enc, ts: Date.now(), sticker: true });
   emojiPanel.classList.add("hidden");
 }
@@ -759,9 +1096,36 @@ async function sendSticker(sticker) {
 async function sendMessage() {
   const text = msgInput.value.trim();
   if (!text || !selectedChat) return;
-  msgInput.value = "";
   const secret = secretForChat(selectedChat);
+
+  if (editingMessageId) {
+    const id = editingMessageId;
+    msgInput.value = "";
+    editingMessageId = null;
+    hideComposerBar();
+    try {
+      const enc = await encryptText(text, secret);
+      await updateDoc(doc(db, "chatMessages", id), { enc, edited: true });
+    } catch (e) {
+      console.error(e);
+      showToast("✕ ما كدرت أعدّل الرسالة");
+    }
+    return;
+  }
+
+  msgInput.value = "";
   const enc = await encryptText(text, secret);
-  const chatId = selectedChat.type === "dm" ? dmChatId(session.username, selectedChat.id) : "group__" + selectedChat.id;
-  await addDoc(collection(db, "chatMessages"), { chatId, from: session.username, enc, ts: Date.now() });
+  const chatId = chatIdFor(selectedChat);
+  const payload = { chatId, from: session.username, enc, ts: Date.now() };
+  if (replyTarget) {
+    payload.replyTo = {
+      id: replyTarget.id, from: replyTarget.from,
+      encPreview: await encryptText(replyTarget.preview, secret),
+    };
+    replyTarget = null;
+    hideComposerBar();
+  }
+  await addDoc(collection(db, "chatMessages"), payload);
+  // clear my own typing flag right after sending
+  setDoc(doc(db, "chatTyping", chatId), { [session.username]: 0 }, { merge: true }).catch(() => {});
 }
