@@ -60,6 +60,13 @@ body.light #langBtn { background:#ede8dc; border-color:#c9a84c; }
   transition:opacity .25s, transform .25s; box-shadow:0 4px 20px rgba(0,0,0,0.4);
 }
 #copyToast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+#achToast {
+  position:fixed; bottom:84px; left:50%; transform:translateX(-50%) translateY(20px);
+  background:linear-gradient(135deg,#f0d080,#c9a84c); color:#0c0c0c; font-weight:700; font-size:.8rem;
+  padding:10px 20px; border-radius:30px; z-index:99999; opacity:0; pointer-events:none;
+  transition:opacity .25s, transform .25s; box-shadow:0 4px 24px rgba(201,168,76,0.4); white-space:nowrap;
+}
+#achToast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
 #musicBtn {
   position:fixed; top:16px; right:108px; z-index:9997;
@@ -161,6 +168,7 @@ body.light .visitor-box, body.light .flip-front { background:#ede8dc; border-col
 body.light .flip-back { background:linear-gradient(135deg,#e8e0c8,#d4c89a); }
 body { display:flex; justify-content:center; padding:36px 16px 70px; }
 #c { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; }
+#trail { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:5; }
 #glow { position:fixed; top:0; left:0; width:100%; height:100%; background:radial-gradient(ellipse 70% 50% at 50% 0%, rgba(201,168,76,0.09) 0%, transparent 65%); pointer-events:none; z-index:0; }
 .card { position:relative; z-index:1; width:100%; max-width:360px; display:flex; flex-direction:column; align-items:center; }
 .av-wrap { width:110px; height:110px; position:relative; margin-bottom:16px; flex-shrink:0; }
@@ -168,7 +176,12 @@ body { display:flex; justify-content:center; padding:36px 16px 70px; }
 @keyframes spin { to{ transform:rotate(360deg) } }
 .av-ring::after { content:''; position:absolute; inset:3px; border-radius:50%; background:#0a0a0a; }
 .av-wrap img { position:absolute; inset:0; z-index:2; width:100%; height:100%; border-radius:50%; object-fit:cover; }
-.name { font-family:'Cinzel',serif; font-size:1.8rem; font-weight:900; letter-spacing:.12em; background:linear-gradient(135deg,#f0d080 0%,#c9a84c 50%,#7a5f2a 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:4px; text-align:center; }
+.name { position:relative; font-family:'Cinzel',serif; font-size:1.8rem; font-weight:900; letter-spacing:.12em; background:linear-gradient(135deg,#f0d080 0%,#c9a84c 50%,#7a5f2a 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:4px; text-align:center; }
+.name.glitching::before, .name.glitching::after { content:attr(data-text); position:absolute; top:0; left:0; width:100%; background:none; }
+.name.glitching::before { color:#ff2b4e; -webkit-text-fill-color:#ff2b4e; clip-path:inset(0 0 60% 0); animation:glitchTop .35s steps(2) infinite; }
+.name.glitching::after { color:#2be0ff; -webkit-text-fill-color:#2be0ff; clip-path:inset(60% 0 0 0); animation:glitchBot .35s steps(2) infinite reverse; }
+@keyframes glitchTop { 0%{transform:translate(0,0)} 20%{transform:translate(-3px,-1px)} 40%{transform:translate(3px,1px)} 60%{transform:translate(-2px,0)} 80%{transform:translate(2px,-1px)} 100%{transform:translate(0,0)} }
+@keyframes glitchBot { 0%{transform:translate(0,0)} 25%{transform:translate(3px,1px)} 50%{transform:translate(-3px,0)} 75%{transform:translate(2px,-1px)} 100%{transform:translate(0,0)} }
 .handle { font-size:.8rem; color:#7a5f2a; letter-spacing:.18em; text-transform:uppercase; margin-bottom:4px; }
 .bio { font-size:.82rem; color:#6b6050; text-align:center; margin-bottom:20px; }
 .orn { color:#7a5f2a; letter-spacing:.4em; opacity:.6; margin-bottom:14px; font-size:1rem; }
@@ -437,7 +450,9 @@ animation:badgePulse 2s ease infinite;
 .t-dot { width:10px; height:10px; border-radius:50%; }
 .t-red { background:#ff5f57; } .t-yellow { background:#febc2e; } .t-green { background:#28c840; }
 .t-title { flex:1; text-align:center; font-size:.6rem; color:#3a3028; letter-spacing:.15em; }
-.terminal-body { padding:14px 16px; min-height:160px; }
+.terminal-body { padding:14px 16px; min-height:160px; max-height:240px; overflow-y:auto; cursor:text; }
+.t-input { background:transparent; border:none; outline:none; color:#e8e0cc; font-family:inherit; font-size:.72rem; flex:1; caret-color:#c9a84c; min-width:0; }
+.t-hint { color:#3a3028; font-size:.62rem; padding-left:16px; display:block; margin-top:2px; }
 .t-line { font-size:.72rem; line-height:1.9; display:flex; gap:6px; opacity:0; animation:tLineIn .15s ease forwards; }
 .t-prompt { color:#7a5f2a; flex-shrink:0; }
 .t-cmd { color:#e8e0cc; }
@@ -509,13 +524,14 @@ animation:crownFloat 3s ease infinite;
 <button id="themeBtn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
 <button id="langBtn" onclick="toggleLang()" title="Toggle language">EN</button>
 <canvas id="c"></canvas>
+<canvas id="trail"></canvas>
 <div id="glow"></div>
 <div class="card">
   <div class="av-wrap">
     <div class="av-ring"></div>
     <img src="https://github.com/x1877/x1877.github.io/raw/refs/heads/main/FDDF564D-FC80-4462-8F10-3E941813840B.gif" alt="7amo"/>
   </div>
-  <div class="name">X1877</div>
+  <div class="name" id="glitchName" data-text="X1877">X1877</div>
   <div class="handle">@7amo</div>
   <div class="bio"><span id="bioText"></span><span class="bio-cursor"></span></div>
   <div class="orn">— ✦ —</div>
@@ -658,15 +674,15 @@ animation:crownFloat 3s ease infinite;
   <div class="stats-section">
     <div class="stats-grid">
       <div class="stat-box">
-        <span class="stat-num" data-target="300">300</span>
-        <span class="stat-lbl" data-i18n="stat-commits">Commits</span>
-      </div>
-      <div class="stat-box">
-        <span class="stat-num" data-target="47">47</span>
+        <span class="stat-num" data-target="47" data-stat="repos">47</span>
         <span class="stat-lbl" data-i18n="stat-tools">Tools Built</span>
       </div>
       <div class="stat-box">
-        <span class="stat-num" data-target="5">5</span>
+        <span class="stat-num" data-target="10" data-stat="stars">10</span>
+        <span class="stat-lbl" data-i18n="stat-stars">Stars</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-num" data-target="5" data-stat="langs">5</span>
         <span class="stat-lbl" data-i18n="stat-langs">Langs</span>
       </div>
     </div>
@@ -685,6 +701,7 @@ animation:crownFloat 3s ease infinite;
         <span class="t-title">x1877@kali ~ bash</span>
       </div>
       <div class="terminal-body" id="terminalBody">
+        <span class="t-hint">// click here and type a command — try "help"</span>
         <span class="t-cursor" id="termCursor"></span>
       </div>
     </div>
@@ -818,6 +835,7 @@ animation:crownFloat 3s ease infinite;
     </a>
   </div>
   <div id="copyToast">Copied ✓</div>
+  <div id="achToast"></div>
   <div class="div"></div>
   <div class="footer"> · <b class="secret-trigger" onclick="openInbox()">X1877 · </b></div>
 </div>
@@ -991,7 +1009,7 @@ if(musicBtn){
 }
 
 // Floating code
-(function(){const layer=document.getElementById('codeLayer');const snippets=['def orbit(planet, t):','import space','git commit -m "🚀"','while alive: code()','ssh x1877@universe','SELECT * FROM stars','npm run deploy','curl -X POST /hack','chmod 777 life.sh','x1877 = lambda: 1337','ping 0.0.0.0','sudo rm -rf boring/','for soul in matrix:','{ "dev": "x1877" }','const me = "x1877"','> access granted ✓','fork() → exec(dream)'];function spawn(){const el=document.createElement('div');el.className='code-float';el.textContent=snippets[Math.floor(Math.random()*snippets.length)];el.style.left=(Math.random()*95)+'%';el.style.fontSize=(Math.random()*0.3+0.55)+'rem';const dur=Math.random()*18+12;el.style.animationDuration=dur+'s';el.style.animationDelay=(Math.random()*-dur)+'s';layer.appendChild(el);setTimeout(()=>el.remove(),(dur+1)*1000);}for(let i=0;i<18;i++)spawn();setInterval(spawn,2200);})();
+(function(){const layer=document.getElementById('codeLayer');const snippets=['def orbit(planet, t):','import space','git commit -m "🚀"','while alive: code()','ssh x1877@universe','SELECT * FROM stars','npm run deploy','curl -X POST /hack','chmod 777 life.sh','x1877 = lambda: 1337','ping 0.0.0.0','sudo rm -rf boring/','for soul in matrix:','{ "dev": "x1877" }','const me = "x1877"','> access granted ✓','fork() → exec(dream)'];function spawn(){const el=document.createElement('div');el.className='code-float';el.textContent=snippets[Math.floor(Math.random()*snippets.length)];el.style.left=(Math.random()*95)+'%';el.style.fontSize=(Math.random()*0.3+0.55)+'rem';const dur=Math.random()*18+12;el.style.animationDuration=dur+'s';el.style.animationDelay=(Math.random()*-dur)+'s';layer.appendChild(el);setTimeout(()=>el.remove(),(dur+1)*1000);}for(let i=0;i<18;i++)spawn();setInterval(spawn,2200);window._spawnCode=spawn;})();
 
 function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
@@ -1358,7 +1376,7 @@ const translations = {
     'sec-snippets': '◈ Code Snippets',
     'vis-label':    'Total Visitors',
     'vis-online':   'online now',
-    'stat-commits': 'Commits',
+    'stat-stars':   'Stars',
     'stat-tools':   'Tools Built',
     'stat-langs':   'Langs',
     'anon-label':   'Anonymous',
@@ -1405,7 +1423,7 @@ const translations = {
     'sec-snippets': '◈ أكواد برمجية',
     'vis-label':    'إجمالي الزوار',
     'vis-online':   'متصل الآن',
-    'stat-commits': 'كوميت',
+    'stat-stars':   'نجوم',
     'stat-tools':   'أداة مبنية',
     'stat-langs':   'لغات',
     'anon-label':   'مجهول',
@@ -1645,13 +1663,32 @@ function typeBio(){
 }
 typeBio();
 
-// ── Stats Counter ──
+// ── GitHub Live Stats ──
+async function fetchGithubStats(){
+  const cacheKey='ghStatsCache_x1877';
+  try{
+    const cached=JSON.parse(localStorage.getItem(cacheKey)||'null');
+    if(cached && Date.now()-cached.ts<3600000) return cached.data;
+  }catch(e){}
+  const [userRes,reposRes]=await Promise.all([
+    fetch('https://api.github.com/users/x1877'),
+    fetch('https://api.github.com/users/x1877/repos?per_page=100')
+  ]);
+  const user=await userRes.json();
+  const repos=await reposRes.json();
+  const list=Array.isArray(repos)?repos:[];
+  const stars=list.reduce((s,r)=>s+(r.stargazers_count||0),0);
+  const langs=new Set(list.map(r=>r.language).filter(Boolean)).size;
+  const data={repos:user.public_repos ?? list.length, stars, langs:langs||5};
+  try{localStorage.setItem(cacheKey,JSON.stringify({data,ts:Date.now()}));}catch(e){}
+  return data;
+}
 function animateCounters(){
   document.querySelectorAll('.stat-num').forEach(el=>{
     const target=+el.dataset.target;
     const suffix=el.dataset.suffix||'';
     let cur=0;
-    const step=Math.ceil(target/40);
+    const step=Math.ceil(target/40)||1;
     const t=setInterval(()=>{
       cur=Math.min(cur+step,target);
       el.textContent=cur+(cur===target?suffix:'');
@@ -1659,13 +1696,27 @@ function animateCounters(){
     },35);
   });
 }
-const statsObs=new IntersectionObserver(entries=>{
-  entries.forEach(e=>{if(e.isIntersecting){animateCounters();statsObs.disconnect();}});
-},{threshold:.5});
-const statsEl=document.querySelector('.stats-grid');
-if(statsEl)statsObs.observe(statsEl);
+(async function initStats(){
+  try{
+    const data=await Promise.race([
+      fetchGithubStats(),
+      new Promise((_,rej)=>setTimeout(()=>rej('timeout'),2500))
+    ]);
+    const rEl=document.querySelector('[data-stat="repos"]');
+    const sEl=document.querySelector('[data-stat="stars"]');
+    const lEl=document.querySelector('[data-stat="langs"]');
+    if(rEl && data.repos) rEl.dataset.target=data.repos;
+    if(sEl && data.stars!=null) sEl.dataset.target=data.stars;
+    if(lEl && data.langs) lEl.dataset.target=data.langs;
+  }catch(e){ /* keep fallback numbers already in the markup */ }
+  const statsObs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{if(e.isIntersecting){animateCounters();statsObs.disconnect();}});
+  },{threshold:.5});
+  const statsEl=document.querySelector('.stats-grid');
+  if(statsEl)statsObs.observe(statsEl);
+})();
 
-// ── Terminal ──
+// ── Terminal (ambient demo → real interactive input) ──
 const termLines=[
   {prompt:'x1877@kali:~$',cmd:'whoami',out:'x1877 — developer & security researcher'},
   {prompt:'x1877@kali:~$',cmd:'cat skills.txt',out:'Python · PHP · JS · Bash · C'},
@@ -1673,24 +1724,151 @@ const termLines=[
   {prompt:'x1877@kali:~$',cmd:'git log --oneline -3',out:'a3f91c2 add async fetcher\nb8e04d1 fix threading bug\nc12a3f7 init repo'},
   {prompt:'x1877@kali:~$',cmd:'echo "keep building 🚀"',out:'keep building 🚀'},
 ];
-let tIdx=0;
+let tIdx=0, termTimer=null, termInteractive=false;
 function typeTermLine(){
+  if(termInteractive) return;
   const body=document.getElementById('terminalBody');
   const cursor=document.getElementById('termCursor');
-  if(tIdx>=termLines.length){tIdx=0;setTimeout(()=>{body.innerHTML='<span class="t-cursor" id="termCursor"></span>';typeTermLine();},2500);return;}
+  if(tIdx>=termLines.length){tIdx=0;termTimer=setTimeout(()=>{if(!termInteractive){body.innerHTML='<span class="t-hint">// click here and type a command — try "help"</span><span class="t-cursor" id="termCursor"></span>';typeTermLine();}},2500);return;}
   const l=termLines[tIdx++];
   const row=document.createElement('div');row.className='t-line';
   row.style.animationDelay='0s';
   row.innerHTML=`<span class="t-prompt">${l.prompt}</span><span class="t-cmd"> ${l.cmd}</span>`;
   body.insertBefore(row,cursor||body.lastChild);
-  setTimeout(()=>{
+  termTimer=setTimeout(()=>{
+    if(termInteractive) return;
     const out=document.createElement('span');out.className='t-out';out.textContent=l.out;
     body.insertBefore(out,cursor||body.lastChild);
     body.scrollTop=body.scrollHeight;
-    setTimeout(typeTermLine,900);
+    termTimer=setTimeout(typeTermLine,900);
   },400);
 }
-setTimeout(typeTermLine,800);
+termTimer=setTimeout(typeTermLine,800);
+
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+const termCommands={
+  whoami:'x1877 — independent developer · Python/PHP/JS/Bash · builds & sells tools',
+  skills:'Python · PHP · JS · Bash · C',
+  ls:'scanner.py  bot.py  organizer.py  hasher.py',
+  projects:'scanner.py  bot.py  organizer.py  hasher.py',
+  contact:'→ t.me/x1877',
+  'hire me':'let\'s talk → t.me/x1877 📩',
+  hire:'let\'s talk → t.me/x1877 📩',
+  help:'available: help, whoami, skills, projects, contact, sudo, matrix, clear',
+};
+function runTermCommand(raw){
+  const body=document.getElementById('terminalBody');
+  const inputLine=document.getElementById('termInputLine');
+  const cmd=raw.trim();
+  const row=document.createElement('div');row.className='t-line';row.style.opacity='1';
+  row.innerHTML=`<span class="t-prompt">x1877@kali:~$</span><span class="t-cmd"> ${escapeHtml(cmd)}</span>`;
+  body.insertBefore(row,inputLine);
+  if(!cmd){body.scrollTop=body.scrollHeight;return;}
+  const key=cmd.toLowerCase();
+  if(key==='clear'){
+    body.querySelectorAll('.t-line, .t-out').forEach(n=>{if(n!==inputLine)n.remove();});
+    return;
+  }
+  const out=document.createElement('span');out.className='t-out';
+  if(key==='matrix'){
+    out.textContent='initiating matrix.exe...';
+    if(window._spawnCode) for(let i=0;i<40;i++) setTimeout(window._spawnCode,i*30);
+  } else if(key.startsWith('sudo')){
+    out.textContent='Permission denied: x1877 is not in the sudoers file. This incident will be reported.';
+  } else {
+    out.textContent = termCommands[key] || `command not found: ${cmd} — try "help"`;
+  }
+  body.insertBefore(out,inputLine);
+  body.scrollTop=body.scrollHeight;
+}
+function activateTerminal(){
+  if(termInteractive)return;
+  termInteractive=true;
+  clearTimeout(termTimer);
+  const body=document.getElementById('terminalBody');
+  body.innerHTML='';
+  const intro=document.createElement('span');intro.className='t-out';intro.textContent='type "help" to see available commands';
+  body.appendChild(intro);
+  const line=document.createElement('div');line.className='t-line';line.id='termInputLine';line.style.opacity='1';
+  line.innerHTML='<span class="t-prompt">x1877@kali:~$</span><input type="text" id="termInput" class="t-input" autocomplete="off" autocapitalize="off" spellcheck="false"/>';
+  body.appendChild(line);
+  const input=document.getElementById('termInput');
+  input.focus();
+  input.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){
+      const val=input.value;input.value='';
+      runTermCommand(val);
+    }
+  });
+}
+document.getElementById('terminalBody').addEventListener('click',activateTerminal);
+
+// ── Cursor Trail ──
+(function(){
+  const canvas=document.getElementById('trail');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  function resizeTrail(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+  resizeTrail();window.addEventListener('resize',resizeTrail);
+  let sparks=[];
+  if(window.matchMedia('(pointer:fine)').matches){
+    window.addEventListener('mousemove',e=>{
+      sparks.push({x:e.clientX,y:e.clientY,life:1,r:Math.random()*2.5+1.5,gold:Math.random()>0.4});
+      if(sparks.length>60)sparks.shift();
+    });
+  }
+  (function loop(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    sparks.forEach(s=>{
+      ctx.beginPath();ctx.arc(s.x,s.y,Math.max(s.r*s.life,0),0,Math.PI*2);
+      if(s.gold){ctx.shadowColor='rgba(201,168,76,0.8)';ctx.shadowBlur=6;ctx.fillStyle=`rgba(240,208,128,${s.life*0.7})`;}
+      else{ctx.shadowBlur=0;ctx.fillStyle=`rgba(232,224,204,${s.life*0.4})`;}
+      ctx.fill();ctx.shadowBlur=0;
+      s.life-=0.035;
+    });
+    sparks=sparks.filter(s=>s.life>0);
+    requestAnimationFrame(loop);
+  })();
+})();
+
+// ── Name Glitch ──
+(function(){
+  const el=document.getElementById('glitchName');
+  if(!el)return;
+  function glitchBurst(){
+    el.classList.add('glitching');
+    setTimeout(()=>el.classList.remove('glitching'),350);
+    setTimeout(glitchBurst,Math.random()*4000+3500);
+  }
+  setTimeout(glitchBurst,2000);
+})();
+
+// ── Achievement Toast + Konami Easter Egg ──
+function showAchToast(msg){
+  const t=document.getElementById('achToast');
+  if(!t)return;
+  t.textContent=msg;
+  t.classList.add('show');
+  clearTimeout(window._achToastT);
+  window._achToastT=setTimeout(()=>t.classList.remove('show'),2600);
+}
+(function(){
+  const seq=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+  let pos=0;
+  document.addEventListener('keydown',e=>{
+    const key=e.key.length===1?e.key.toLowerCase():e.key;
+    if(key===seq[pos]){
+      pos++;
+      if(pos===seq.length){
+        pos=0;
+        launchConfetti();
+        showAchToast('🏆 Achievement Unlocked: Konami Master');
+      }
+    }else{
+      pos=(key===seq[0])?1:0;
+    }
+  });
+})();
 
 // ── Snippet Tabs ──
 function switchSnippet(lang,tab){
