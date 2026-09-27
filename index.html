@@ -331,7 +331,7 @@ to   { opacity:1; transform:translateY(0) translateX(0); }
 
 /* scanning line effect */
 .cert-card::before {
-content:''; position:absolute; top:-100%; left:0; width:100%; height:100%;
+content:’’; position:absolute; top:-100%; left:0; width:100%; height:100%;
 background:linear-gradient(180deg, transparent 0%, rgba(201,168,76,0.04) 50%, transparent 100%);
 animation:scanLine 4s ease infinite;
 pointer-events:none; z-index:0;
@@ -346,7 +346,7 @@ pointer-events:none; z-index:0;
 
 /* corner accent */
 .cert-card::after {
-content:''; position:absolute; top:0; right:0;
+content:’’; position:absolute; top:0; right:0;
 width:40px; height:40px;
 background:linear-gradient(225deg, rgba(201,168,76,0.15) 0%, transparent 60%);
 pointer-events:none;
@@ -359,7 +359,7 @@ display:flex; align-items:center; justify-content:center;
 position:relative; overflow:hidden;
 }
 .cert-icon-wrap::after {
-content:''; position:absolute; inset:0;
+content:’’; position:absolute; inset:0;
 background:linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 60%);
 }
 .cert-icon { font-size:1.3rem; line-height:1; }
@@ -371,7 +371,7 @@ background:linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 60%);
 
 .cert-info { flex:1; min-width:0; }
 .cert-title {
-font-family:'Cinzel',serif; font-size:.78rem; font-weight:700; letter-spacing:.12em;
+font-family:‘Cinzel’,serif; font-size:.78rem; font-weight:700; letter-spacing:.12em;
 background:linear-gradient(135deg,#f0d080,#c9a84c); -webkit-background-clip:text;
 -webkit-text-fill-color:transparent; background-clip:text;
 margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
@@ -397,7 +397,7 @@ animation:barGlow 2.5s ease infinite, barFill 1.2s cubic-bezier(.25,.46,.45,.94)
 }
 
 .cert-badge {
-flex-shrink:0; font-size:.58rem; font-family:'Cinzel',serif;
+flex-shrink:0; font-size:.58rem; font-family:‘Cinzel’,serif;
 letter-spacing:.08em; padding:3px 8px; border-radius:20px;
 border:1px solid #2a2010; color:#7a5f2a; white-space:nowrap;
 background:#0a0a06;
@@ -515,99 +515,6 @@ animation:crownFloat 3s ease infinite;
 0%,100%{transform:translateY(0) rotate(-5deg)}
 50%{transform:translateY(-4px) rotate(5deg)}
 }
-
-/* ══════════════════════════════════════════════════
-   ✦ DYNAMIC BACKGROUND ENGINE ✦
-   ══════════════════════════════════════════════════ */
-@property --hue { syntax:"<number>"; inherits:true; initial-value:45; }
-:root { --hue:45; transition:--hue 2.4s cubic-bezier(.4,0,.2,1); }
-
-#aurora, #orbs, #gridFloor, #matrix, #shooting {
-  position:fixed; inset:0; pointer-events:none; z-index:0;
-}
-#matrix, #shooting { width:100%; height:100%; display:block; }
-#matrix   { mix-blend-mode:screen; opacity:.62; }
-#shooting { mix-blend-mode:screen; opacity:.95; }
-
-/* base glow now follows the rotating hue */
-#glow {
-  background:radial-gradient(ellipse 70% 50% at 50% 0%,
-    hsl(var(--hue) 72% 58% / .12) 0%, transparent 65%);
-}
-
-/* ── AURORA ── */
-#aurora {
-  background:
-    radial-gradient(42% 38% at 12% 8%,  hsl(var(--hue) 72% 58% / .18), transparent 70%),
-    radial-gradient(38% 42% at 90% 18%, hsl(calc(var(--hue) + 45) 78% 58% / .14), transparent 70%),
-    radial-gradient(52% 40% at 50% 108%, hsl(calc(var(--hue) - 40) 70% 52% / .16), transparent 72%);
-  animation:auroraDrift 20s ease-in-out infinite alternate;
-}
-@keyframes auroraDrift {
-  0%   { transform:translate3d(0,0,0) scale(1.02); }
-  50%  { transform:translate3d(-2.5%,1.6%,0) scale(1.1); }
-  100% { transform:translate3d(2%,-1.2%,0) scale(1.04); }
-}
-
-/* ── FLOATING ORBS (parallax) ── */
-#orbs { overflow:hidden; transition:transform .8s cubic-bezier(.2,.8,.3,1); will-change:transform; }
-.orb { position:absolute; border-radius:50%; opacity:.6; will-change:transform; }
-.orb:nth-child(1){ width:46vmin; height:46vmin; left:-10%; top:6%;
-  background:radial-gradient(circle, hsl(var(--hue) 85% 62% / .22), transparent 68%);
-  animation:orbA 24s ease-in-out infinite; }
-.orb:nth-child(2){ width:38vmin; height:38vmin; right:-8%; top:22%;
-  background:radial-gradient(circle, hsl(calc(var(--hue) + 50) 85% 62% / .18), transparent 68%);
-  animation:orbB 30s ease-in-out infinite; }
-.orb:nth-child(3){ width:52vmin; height:52vmin; left:28%; bottom:-16%;
-  background:radial-gradient(circle, hsl(calc(var(--hue) - 45) 80% 58% / .16), transparent 70%);
-  animation:orbC 34s ease-in-out infinite; }
-.orb:nth-child(4){ width:30vmin; height:30vmin; right:14%; bottom:8%;
-  background:radial-gradient(circle, hsl(calc(var(--hue) + 25) 90% 65% / .14), transparent 68%);
-  animation:orbA 27s ease-in-out infinite reverse; }
-@keyframes orbA { 0%,100%{transform:translate3d(0,0,0)} 50%{transform:translate3d(6vw,-4vh,0)} }
-@keyframes orbB { 0%,100%{transform:translate3d(0,0,0)} 50%{transform:translate3d(-7vw,5vh,0)} }
-@keyframes orbC { 0%,100%{transform:translate3d(0,0,0) scale(1)} 50%{transform:translate3d(4vw,-6vh,0) scale(1.12)} }
-
-/* ── PERSPECTIVE GRID FLOOR ── */
-#gridFloor {
-  top:auto; right:auto; bottom:0; left:-50%;
-  width:200%; height:52%;
-  background-image:
-    linear-gradient(to right,  hsl(var(--hue) 80% 60% / .14) 1px, transparent 1px),
-    linear-gradient(to bottom, hsl(var(--hue) 80% 60% / .14) 1px, transparent 1px);
-  background-size:64px 64px;
-  transform:perspective(280px) rotateX(64deg);
-  transform-origin:50% 100%;
-  animation:gridScroll 2.6s linear infinite;
-  -webkit-mask-image:linear-gradient(to top, #000 0%, transparent 78%);
-          mask-image:linear-gradient(to top, #000 0%, transparent 78%);
-  opacity:.85;
-}
-@keyframes gridScroll { from{ background-position:0 0; } to{ background-position:0 64px; } }
-
-/* ── BG BUTTON ── */
-#bgBtn {
-  position:fixed; top:16px; right:154px; z-index:9997;
-  width:38px; height:38px; border-radius:50%;
-  background:#0e0e0e; border:1px solid #2a2010;
-  display:flex; align-items:center; justify-content:center;
-  transition:all .35s; font-size:1rem; cursor:pointer;
-  box-shadow:0 2px 12px rgba(0,0,0,0.4);
-}
-#bgBtn:hover { border-color:#c9a84c; box-shadow:0 0 16px rgba(201,168,76,0.28); }
-#bgBtn:active { transform:scale(.86) rotate(180deg); }
-body.light #bgBtn { background:#ede8dc; border-color:#c9a84c; }
-
-/* ── LIGHT MODE ATMOSPHERE ── */
-body.light #matrix   { mix-blend-mode:normal; opacity:.16; }
-body.light #shooting { mix-blend-mode:normal; opacity:.30; }
-body.light #aurora   { opacity:.55; }
-body.light #orbs     { opacity:.45; }
-body.light #gridFloor{ opacity:.28; }
-
-@media (prefers-reduced-motion: reduce) {
-  #aurora, .orb, #gridFloor { animation:none !important; }
-}
 </style>
 
 </head>
@@ -616,14 +523,6 @@ body.light #gridFloor{ opacity:.28; }
 <button id="musicBtn" title="Music">🎵</button>
 <button id="themeBtn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
 <button id="langBtn" onclick="toggleLang()" title="Toggle language">EN</button>
-<button id="bgBtn" onclick="cycleAtmosphere()" title="Change background">✨</button>
-<div id="aurora"></div>
-<div id="orbs">
-  <span class="orb"></span><span class="orb"></span><span class="orb"></span><span class="orb"></span>
-</div>
-<div id="gridFloor"></div>
-<canvas id="matrix"></canvas>
-<canvas id="shooting"></canvas>
 <canvas id="c"></canvas>
 <canvas id="trail"></canvas>
 <div id="glow"></div>
@@ -984,4 +883,1010 @@ body.light #gridFloor{ opacity:.28; }
     <div class="pin-label">◈ أدخل الرمز السري</div>
     <input type="password" class="pin-input" id="pinInput" maxlength="6" placeholder="••••••" onkeydown="if(event.key==='Enter') checkPin()"/>
     <button class="pin-btn" onclick="checkPin()">دخول</button>
-    <div class="pin-error" id="pinError">✕ رمز خاط
+    <div class="pin-error" id="pinError">✕ رمز خاطئ</div>
+  </div>
+  <div class="inbox-body" id="inboxBody" style="display:none;">
+    <div class="inbox-subhead">◈ رفع ملف للزوار</div>
+    <div class="upload-box">
+      <label class="file-drop" id="pubFileDropLabel" for="pubFileInput">
+        <span id="pubFileDropText">◈ اضغط لاختيار ملف (أي نوع)</span>
+      </label>
+      <input type="file" id="pubFileInput" onchange="handlePubFilePick()" style="display:none;"/>
+      <input type="text" class="name-input" id="pubFileCaption" placeholder="وصف قصير (اختياري)" maxlength="60" style="margin-top:10px;"/>
+      <button class="send-btn" id="pubUploadBtn" onclick="uploadPublicFile()">رفع ✦</button>
+      <div class="file-hint" id="pubFileHint">يظهر للجميع بقسم Downloads بالموقع</div>
+      <div id="ownedFilesList" class="owned-files-list"></div>
+    </div>
+    <div class="empty-inbox" id="emptyNotice" style="display:none;">◈ لا توجد رسائل بعد</div>
+    <div class="loading-spinner" id="loadingSpinner">◈ جاري التحميل...</div>
+    <div class="inbox-subhead" id="filesSubhead" style="display:none;">◈ ملفات مرسلة</div>
+    <div class="empty-inbox" id="emptyFilesNotice" style="display:none;">◈ لا توجد ملفات بعد</div>
+    <div class="loading-spinner" id="loadingFilesSpinner" style="display:none;">◈ جاري تحميل الملفات...</div>
+  </div>
+  <div class="inbox-actions" id="inboxActions" style="display:none;">
+    <button class="clear-all-btn" onclick="clearAllMessages()">◈ حذف الكل</button>
+  </div>
+</div>
+
+<!-- FLOATING BUBBLE -->
+<div id="floatBubble" onclick="openChatModal()">
+  <div class="bubble-ping"></div>
+  <svg fill="none" viewBox="0 0 24 24" stroke="rgba(10,10,10,0.9)" stroke-width="2">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+  </svg>
+</div>
+
+<audio id="bgMusic" loop>
+  <source src="https://github.com/x1877/x1877.github.io/raw/refs/heads/main/X1877by.m4a" type="audio/mp4">
+</audio>
+<div id="codeLayer"></div>
+
+<!-- Firebase -->
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, serverTimestamp, setDoc, onSnapshot, increment }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyBzOyrkF5fCw-xYDj2teE8abapHAyDyXkE",
+  authDomain: "x1877m.firebaseapp.com",
+  projectId: "x1877m",
+  storageBucket: "x1877m.firebasestorage.app",
+  messagingSenderId: "264666600140",
+  appId: "1:264666600140:web:ec02edb1941d75f625a869"
+});
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+window._fb = { db, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, serverTimestamp, setDoc, onSnapshot, increment, storage, ref, uploadBytes, getDownloadURL, deleteObject };
+window._firebaseReady = true;
+window.dispatchEvent(new Event('firebaseReady'));
+</script>
+
+<script>
+const COLLECTION = "messages";
+const FILES_COLLECTION = "file_submissions";
+const PUBLIC_FILES_COLLECTION = "public_files";
+const MAX_FILE_SIZE = 500 * 1024;
+const MAX_PUBLIC_FILE_SIZE = 700 * 1024;
+const SECRET_PIN = "313"; // ← غيّر الرمز هنا
+let pinPassed = false;
+
+// Stars
+const canvas=document.getElementById('c'),ctx=canvas.getContext('2d');
+function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+resize();window.addEventListener('resize',resize);
+const stars=Array.from({length:100},()=>({x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,r:Math.random()*1.2+0.2,a:Math.random(),sp:Math.random()*0.3+0.08,dr:(Math.random()-0.5)*0.2,ts:Math.random()*0.015+0.004,td:Math.random()>0.5?1:-1,gold:Math.random()>0.6}));
+(function loop(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;stars.forEach(s=>{s.a+=s.ts*s.td;if(s.a>=1){s.a=1;s.td=-1;}if(s.a<=0.05){s.a=0.05;s.td=1;}s.y-=s.sp;s.x+=s.dr;if(s.y<-4){s.y=window.innerHeight+4;s.x=Math.random()*window.innerWidth;}if(s.x<-4)s.x=window.innerWidth;if(s.x>window.innerWidth+4)s.x=0;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);if(s.gold){ctx.shadowColor='rgba(201,168,76,0.8)';ctx.shadowBlur=4;ctx.fillStyle=`rgba(201,168,76,${s.a})`;}else{ctx.shadowBlur=0;ctx.fillStyle=`rgba(230,220,190,${s.a*0.6})`;}ctx.fill();ctx.shadowBlur=0;});requestAnimationFrame(loop);})();
+
+// ── Copy to clipboard ──
+function copyText(txt, e){
+  if(e){ e.preventDefault(); e.stopPropagation(); }
+  const done = () => {
+    const t = document.getElementById('copyToast');
+    if(!t) return;
+    t.classList.add('show');
+    clearTimeout(window._toastT);
+    window._toastT = setTimeout(()=>t.classList.remove('show'), 1400);
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(done).catch(done);
+  } else {
+    const ta=document.createElement('textarea');
+    ta.value=txt; document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); }catch(err){}
+    document.body.removeChild(ta); done();
+  }
+}
+function copySnippet(){
+  const active = document.querySelector('.snippet-panel.active .s-code');
+  if(!active) return;
+  copyText(active.textContent, null);
+}
+window.copyText = copyText;
+window.copySnippet = copySnippet;
+
+
+const bgMusic=document.getElementById("bgMusic");bgMusic.volume=0.4;
+function tryPlay(){bgMusic.play().then(()=>_setMusicBtn(true)).catch(()=>_setMusicBtn(false));}tryPlay();
+document.addEventListener('click',tryPlay,{once:true});document.addEventListener('touchstart',tryPlay,{once:true});
+
+const musicBtn=document.getElementById('musicBtn');
+function _setMusicBtn(playing){
+  if(!musicBtn)return;
+  musicBtn.textContent = playing ? '🎶' : '🎵';
+  musicBtn.classList.toggle('playing', playing);
+}
+if(musicBtn){
+  musicBtn.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    if(bgMusic.paused){ bgMusic.play().then(()=>_setMusicBtn(true)).catch(()=>_setMusicBtn(false)); }
+    else { bgMusic.pause(); _setMusicBtn(false); }
+  });
+}
+
+// Floating code
+(function(){const layer=document.getElementById('codeLayer');const snippets=['def orbit(planet, t):','import space','git commit -m "🚀"','while alive: code()','ssh x1877@universe','SELECT * FROM stars','npm run deploy','curl -X POST /hack','chmod 777 life.sh','x1877 = lambda: 1337','ping 0.0.0.0','sudo rm -rf boring/','for soul in matrix:','{ "dev": "x1877" }','const me = "x1877"','> access granted ✓','fork() → exec(dream)'];function spawn(){const el=document.createElement('div');el.className='code-float';el.textContent=snippets[Math.floor(Math.random()*snippets.length)];el.style.left=(Math.random()*95)+'%';el.style.fontSize=(Math.random()*0.3+0.55)+'rem';const dur=Math.random()*18+12;el.style.animationDuration=dur+'s';el.style.animationDelay=(Math.random()*-dur)+'s';layer.appendChild(el);setTimeout(()=>el.remove(),(dur+1)*1000);}for(let i=0;i<18;i++)spawn();setInterval(spawn,2200);window._spawnCode=spawn;})();
+
+function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// Send Modal
+function openChatModal(){document.getElementById('chatModal').classList.add('open');document.getElementById('msgInput').focus();}
+window.openChatModal=openChatModal;
+function closeChatModal(){document.getElementById('chatModal').classList.remove('open');document.getElementById('msgInput').value='';document.getElementById('charNum').textContent='0';document.getElementById('successMsg').style.display='none';const b=document.getElementById('sendBtn');b.style.display='block';b.disabled=false;b.textContent='إرسال ✦';}
+window.closeChatModal=closeChatModal;
+function updateChar(){document.getElementById('charNum').textContent=document.getElementById('msgInput').value.length;}
+window.updateChar=updateChar;
+
+async function sendMessage(){
+  const text=document.getElementById('msgInput').value.trim();
+  if(!text)return;
+  if(!window._firebaseReady){alert('جاري الاتصال، انتظر ثانية');return;}
+  const btn=document.getElementById('sendBtn');btn.disabled=true;btn.textContent='...';
+  try{
+    const fb=window._fb;
+    await fb.addDoc(fb.collection(fb.db,COLLECTION),{text,time:new Date().toISOString(),ts:fb.serverTimestamp()});
+    btn.style.display='none';document.getElementById('successMsg').style.display='block';
+    setTimeout(closeChatModal,1800);
+  }catch(e){btn.disabled=false;btn.textContent='إرسال ✦';alert('خطأ في الإرسال');}
+}
+window.sendMessage=sendMessage;
+
+// File send modal
+let _pickedFile = null;
+function openFileModal(){document.getElementById('fileModal').classList.add('open');}
+window.openFileModal=openFileModal;
+function closeFileModal(){
+  document.getElementById('fileModal').classList.remove('open');
+  document.getElementById('fileSenderName').value='';
+  document.getElementById('fileInput').value='';
+  document.getElementById('fileDropText').textContent='◈ اضغط لاختيار ملف';
+  document.getElementById('fileDropLabel').classList.remove('picked');
+  document.getElementById('fileHint').textContent='حد أقصى 500KB · ملفات نصية/كود بس';
+  document.getElementById('fileHint').classList.remove('warn');
+  _pickedFile=null;
+  const b=document.getElementById('fileSendBtn');b.style.display='block';b.disabled=false;b.textContent='إرسال ✦';
+  document.getElementById('fileSuccessMsg').style.display='none';
+}
+window.closeFileModal=closeFileModal;
+
+function getFileEmoji(name){
+  const ext=(name||'').split('.').pop().toLowerCase();
+  const map={py:'🐍',php:'🐘',js:'📜',jsx:'📜',ts:'📘',tsx:'📘',html:'🌐',css:'🎨',json:'🗃️',c:'⚙️',cpp:'⚙️',h:'⚙️',java:'☕',rb:'💎',go:'🐹',sh:'💻',sql:'🗄️',md:'📝',xml:'📰',yml:'⚓',yaml:'⚓',txt:'📄'};
+  return map[ext]||'📎';
+}
+window.getFileEmoji=getFileEmoji;
+
+function handleFilePick(){
+  const input=document.getElementById('fileInput');
+  const hint=document.getElementById('fileHint');
+  const label=document.getElementById('fileDropLabel');
+  const dropText=document.getElementById('fileDropText');
+  const file=input.files[0];
+  _pickedFile=null;
+  if(!file)return;
+  if(file.size>MAX_FILE_SIZE){
+    hint.textContent='✕ الملف أكبر من 500KB، اختر ملف أصغر';
+    hint.classList.add('warn');
+    label.classList.remove('picked');
+    input.value='';
+    return;
+  }
+  const reader=new FileReader();
+  reader.onload=()=>{
+    _pickedFile={name:file.name,content:reader.result,size:file.size};
+    dropText.textContent=getFileEmoji(file.name)+' '+file.name+'  ·  '+Math.max(1,Math.round(file.size/1024))+'KB';
+    label.classList.add('picked');
+    hint.textContent='حد أقصى 500KB · ملفات نصية/كود بس';
+    hint.classList.remove('warn');
+  };
+  reader.onerror=()=>{
+    hint.textContent='✕ ما قدرت اقرأ الملف';
+    hint.classList.add('warn');
+  };
+  reader.readAsText(file);
+}
+window.handleFilePick=handleFilePick;
+
+async function sendFile(){
+  const name=document.getElementById('fileSenderName').value.trim();
+  const hint=document.getElementById('fileHint');
+  if(!name){hint.textContent='✕ اكتب اسمك أول';hint.classList.add('warn');return;}
+  if(!_pickedFile){hint.textContent='✕ اختر ملف أول';hint.classList.add('warn');return;}
+  if(!window._firebaseReady){alert('جاري الاتصال، انتظر ثانية');return;}
+  const btn=document.getElementById('fileSendBtn');btn.disabled=true;btn.textContent='...';
+  try{
+    const fb=window._fb;
+    await fb.addDoc(fb.collection(fb.db,FILES_COLLECTION),{
+      senderName:name, fileName:_pickedFile.name, content:_pickedFile.content,
+      size:_pickedFile.size, time:new Date().toISOString(), ts:fb.serverTimestamp()
+    });
+    btn.style.display='none';document.getElementById('fileSuccessMsg').style.display='block';
+    launchConfetti();
+    setTimeout(closeFileModal,1800);
+  }catch(e){btn.disabled=false;btn.textContent='إرسال ✦';alert('خطأ في الإرسال');}
+}
+window.sendFile=sendFile;
+
+
+// Inbox
+function openInbox(){
+  document.getElementById('inboxPanel').classList.add('open');
+  if(!pinPassed){document.getElementById('pinScreen').style.display='flex';document.getElementById('inboxBody').style.display='none';document.getElementById('inboxActions').style.display='none';setTimeout(()=>document.getElementById('pinInput').focus(),100);}
+  else {renderMessages();renderFiles();renderOwnedFiles();}
+}
+window.openInbox=openInbox;
+function closeInbox(){document.getElementById('inboxPanel').classList.remove('open');document.getElementById('pinInput').value='';document.getElementById('pinError').style.display='none';}
+window.closeInbox=closeInbox;
+function checkPin(){
+  if(document.getElementById('pinInput').value===SECRET_PIN){
+    pinPassed=true;
+    document.getElementById('pinScreen').style.display='none';
+    document.getElementById('inboxBody').style.display='flex';
+    document.getElementById('inboxActions').style.display='flex';
+    renderMessages();
+    renderFiles();
+    renderOwnedFiles();
+  }else{
+    document.getElementById('pinError').style.display='block';
+    document.getElementById('pinInput').value='';
+    document.getElementById('pinInput').focus();
+    setTimeout(()=>document.getElementById('pinError').style.display='none',2000);
+  }
+}
+window.checkPin=checkPin;
+
+async function renderMessages(){
+  if(!window._firebaseReady){setTimeout(renderMessages,500);return;}
+  const body=document.getElementById('inboxBody');
+  const spinner=document.getElementById('loadingSpinner');
+  const empty=document.getElementById('emptyNotice');
+  spinner.style.display='block';empty.style.display='none';
+  Array.from(body.querySelectorAll('.msg-card')).forEach(el=>el.remove());
+  try{
+    const fb=window._fb;
+    const q=fb.query(fb.collection(fb.db,COLLECTION),fb.orderBy('ts','desc'));
+    const snap=await fb.getDocs(q);
+    spinner.style.display='none';
+    document.getElementById('msgCountBadge').textContent=snap.size?`(${snap.size})`:'';
+    if(snap.empty){empty.style.display='block';return;}
+    snap.forEach(d=>{
+      const m=d.data();
+      const card=document.createElement('div');card.className='msg-card';
+      const t=m.time?new Date(m.time).toLocaleString('ar-IQ'):'—';
+      card.innerHTML=`<div class="msg-time">${t}</div><div class="msg-text">${escapeHtml(m.text)}</div><button class="msg-del" onclick="deleteMessage('${d.id}')">✕</button>`;
+      body.appendChild(card);
+    });
+  }catch(e){spinner.style.display='none';empty.textContent='◈ خطأ في التحميل';empty.style.display='block';}
+}
+
+async function deleteMessage(id){
+  if(!window._firebaseReady)return;
+  const fb=window._fb;
+  await fb.deleteDoc(fb.doc(fb.db,COLLECTION,id));
+  renderMessages();
+}
+window.deleteMessage=deleteMessage;
+
+async function renderFiles(){
+  if(!window._firebaseReady){setTimeout(renderFiles,500);return;}
+  const body=document.getElementById('inboxBody');
+  const spinner=document.getElementById('loadingFilesSpinner');
+  const empty=document.getElementById('emptyFilesNotice');
+  const subhead=document.getElementById('filesSubhead');
+  subhead.style.display='block';
+  spinner.style.display='block';empty.style.display='none';
+  Array.from(body.querySelectorAll('.file-card')).forEach(el=>el.remove());
+  try{
+    const fb=window._fb;
+    const q=fb.query(fb.collection(fb.db,FILES_COLLECTION),fb.orderBy('ts','desc'));
+    const snap=await fb.getDocs(q);
+    spinner.style.display='none';
+    if(snap.empty){empty.style.display='block';return;}
+    snap.forEach(d=>{
+      const m=d.data();
+      _fileCache[d.id]={name:m.fileName||'file.txt',content:m.content||''};
+      const card=document.createElement('div');card.className='file-card';
+      const t=m.time?new Date(m.time).toLocaleString('ar-IQ'):'—';
+      const kb=m.size?Math.max(1,Math.round(m.size/1024)):'?';
+      card.innerHTML=`<div class="msg-time">${t}</div>
+        <div class="file-meta"><span class="file-sender">${escapeHtml(m.senderName||'—')}</span><span class="file-name">${getFileEmoji(m.fileName)} ${escapeHtml(m.fileName||'file.txt')} · ${kb}KB</span></div>
+        <div class="file-preview">${escapeHtml((m.content||'').slice(0,2000))}</div>
+        <div class="file-actions">
+          <span onclick="copyFileById('${d.id}')">نسخ 📋</span>
+          <span onclick="downloadFileById('${d.id}')">تحميل ⬇</span>
+        </div>
+        <button class="msg-del" onclick="deleteFile('${d.id}')">✕</button>`;
+      body.appendChild(card);
+    });
+  }catch(e){spinner.style.display='none';empty.textContent='◈ خطأ في التحميل';empty.style.display='block';}
+}
+
+const _fileCache={};
+function copyFileById(id){ const f=_fileCache[id]; if(f) copyText(f.content,null); }
+window.copyFileById=copyFileById;
+function downloadFileById(id){ const f=_fileCache[id]; if(f) downloadFile(f.name,f.content); }
+window.downloadFileById=downloadFileById;
+
+function downloadFile(name, content){
+  const blob=new Blob([content],{type:'text/plain'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=name||'file.txt';
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),2000);
+}
+window.downloadFile=downloadFile;
+
+async function deleteFile(id){
+  if(!window._firebaseReady)return;
+  const fb=window._fb;
+  await fb.deleteDoc(fb.doc(fb.db,FILES_COLLECTION,id));
+  renderFiles();
+}
+window.deleteFile=deleteFile;
+
+// ── Public Files (owner uploads → everyone sees on the page) ──
+// Stored directly in Firestore as base64 — works on the free Spark plan, no Storage/Blaze needed.
+let _pubPickedFile=null;
+
+function handlePubFilePick(){
+  const input=document.getElementById('pubFileInput');
+  const label=document.getElementById('pubFileDropLabel');
+  const dropText=document.getElementById('pubFileDropText');
+  const hint=document.getElementById('pubFileHint');
+  const file=input.files[0];
+  _pubPickedFile=null;
+  if(!file)return;
+  if(file.size>MAX_PUBLIC_FILE_SIZE){
+    hint.textContent='✕ الملف أكبر من 700KB';
+    hint.classList.add('warn');
+    label.classList.remove('picked');
+    input.value='';
+    return;
+  }
+  const reader=new FileReader();
+  reader.onload=()=>{
+    _pubPickedFile={name:file.name,size:file.size,dataUrl:reader.result};
+    dropText.textContent=getFileEmoji(file.name)+' '+file.name+'  ·  '+Math.max(1,Math.round(file.size/1024))+'KB';
+    label.classList.add('picked');
+    hint.textContent='يظهر للجميع بقسم Downloads بالموقع';
+    hint.classList.remove('warn');
+  };
+  reader.onerror=()=>{ hint.textContent='✕ ما قدرت اقرأ الملف'; hint.classList.add('warn'); };
+  reader.readAsDataURL(file);
+}
+window.handlePubFilePick=handlePubFilePick;
+
+async function uploadPublicFile(){
+  const hint=document.getElementById('pubFileHint');
+  const caption=document.getElementById('pubFileCaption').value.trim();
+  if(!_pubPickedFile){hint.textContent='✕ اختر ملف أول';hint.classList.add('warn');return;}
+  if(!window._firebaseReady){alert('جاري الاتصال، انتظر ثانية');return;}
+  const btn=document.getElementById('pubUploadBtn');
+  btn.disabled=true;btn.textContent='...';
+  try{
+    const fb=window._fb;
+    await fb.addDoc(fb.collection(fb.db,PUBLIC_FILES_COLLECTION),{
+      name:_pubPickedFile.name, dataUrl:_pubPickedFile.dataUrl, caption, size:_pubPickedFile.size,
+      time:new Date().toISOString(), ts:fb.serverTimestamp()
+    });
+    hint.textContent='✦ تم الرفع بنجاح ✦';hint.classList.remove('warn');
+    launchConfetti();
+    document.getElementById('pubFileInput').value='';
+    document.getElementById('pubFileCaption').value='';
+    document.getElementById('pubFileDropText').textContent='◈ اضغط لاختيار ملف (أي نوع)';
+    document.getElementById('pubFileDropLabel').classList.remove('picked');
+    _pubPickedFile=null;
+    loadPublicFiles();
+    renderOwnedFiles();
+  }catch(e){
+    hint.textContent='✕ فشل الرفع، جرب لاحقاً';hint.classList.add('warn');
+  }
+  btn.disabled=false;btn.textContent='رفع ✦';
+}
+window.uploadPublicFile=uploadPublicFile;
+
+async function loadPublicFiles(){
+  const list=document.getElementById('publicFilesList');
+  const empty=document.getElementById('pubFilesEmpty');
+  const loading=document.getElementById('pubFilesLoading');
+  if(!window._firebaseReady){setTimeout(loadPublicFiles,500);return;}
+  loading.style.display='block';empty.style.display='none';
+  Array.from(list.querySelectorAll('.pub-file')).forEach(el=>el.remove());
+  try{
+    const fb=window._fb;
+    const q=fb.query(fb.collection(fb.db,PUBLIC_FILES_COLLECTION),fb.orderBy('ts','desc'));
+    const snap=await fb.getDocs(q);
+    loading.style.display='none';
+    if(snap.empty){empty.style.display='block';return;}
+    snap.forEach(d=>{
+      const m=d.data();
+      const kb=m.size?Math.max(1,Math.round(m.size/1024)):'?';
+      const a=document.createElement('a');
+      a.className='pub-file'; a.href=m.dataUrl; a.rel='noopener';
+      a.download=m.name||'file';
+      a.innerHTML=`<div class="li">${getFileEmoji(m.name)}</div>
+        <div class="lt"><span class="ll">${escapeHtml(m.name||'file')}</span><span class="lv">${kb}KB${m.caption?' · '+escapeHtml(m.caption):''}</span></div>
+        <span class="la">⬇</span>`;
+      list.appendChild(a);
+    });
+  }catch(e){loading.style.display='none';empty.textContent='◈ خطأ بالتحميل';empty.style.display='block';}
+}
+window.loadPublicFiles=loadPublicFiles;
+
+async function renderOwnedFiles(){
+  const box=document.getElementById('ownedFilesList');
+  if(!box)return;
+  box.innerHTML='';
+  if(!window._firebaseReady)return;
+  try{
+    const fb=window._fb;
+    const q=fb.query(fb.collection(fb.db,PUBLIC_FILES_COLLECTION),fb.orderBy('ts','desc'));
+    const snap=await fb.getDocs(q);
+    snap.forEach(d=>{
+      const m=d.data();
+      const row=document.createElement('div');
+      row.className='owned-file-row';
+      row.innerHTML=`<span>${getFileEmoji(m.name)} ${escapeHtml(m.name||'file')}</span><button class="msg-del" onclick="deletePublicFile('${d.id}')">✕</button>`;
+      box.appendChild(row);
+    });
+  }catch(e){}
+}
+window.renderOwnedFiles=renderOwnedFiles;
+
+async function deletePublicFile(id){
+  if(!confirm('حذف هذا الملف من Downloads؟'))return;
+  const fb=window._fb;
+  await fb.deleteDoc(fb.doc(fb.db,PUBLIC_FILES_COLLECTION,id));
+  loadPublicFiles();
+  renderOwnedFiles();
+}
+window.deletePublicFile=deletePublicFile;
+
+
+
+
+
+async function clearAllMessages(){
+  if(!confirm('حذف كل الرسائل والملفات؟'))return;
+  const fb=window._fb;
+  const snap=await fb.getDocs(fb.collection(fb.db,COLLECTION));
+  await Promise.all(snap.docs.map(d=>fb.deleteDoc(fb.doc(fb.db,COLLECTION,d.id))));
+  const fsnap=await fb.getDocs(fb.collection(fb.db,FILES_COLLECTION));
+  await Promise.all(fsnap.docs.map(d=>fb.deleteDoc(fb.doc(fb.db,FILES_COLLECTION,d.id))));
+  renderMessages();
+  renderFiles();
+}
+window.clearAllMessages=clearAllMessages;
+
+// ── Language Toggle (i18n) ──
+const translations = {
+  en: {
+    'sec-certs':    '◈ Certificates & Skills',
+    'sec-downloads':'◈ Downloads',
+    'sec-visitors': '◈ Visitors',
+    'sec-skills':   '◈ Skills',
+    'sec-stats':    '◈ Stats',
+    'sec-terminal': '◈ Terminal',
+    'sec-snippets': '◈ Code Snippets',
+    'vis-label':    'Total Visitors',
+    'vis-online':   'online now',
+    'stat-stars':   'Stars',
+    'stat-tools':   'Tools Built',
+    'stat-langs':   'Langs',
+    'anon-label':   'Anonymous',
+    'anon-desc':    ' you can send anonymous message 🔒',
+    'file-label':   'Send a file',
+    'file-desc':    ' .txt / .py / .php / code 📎',
+    'cert-py-title':'Python Development',
+    'cert-py-sub':  'Advanced · Scripting & Automation',
+    'cert-php-title':'PHP Development',
+    'cert-php-sub': 'Backend · Web Applications',
+    'cert-html-title':'HTML / CSS / JS',
+    'cert-html-sub':'Frontend · UI Engineering',
+    'cert-hack-title':'Hacking Tools Dev',
+    'cert-hack-sub':'Security · Offensive Tools Programmer',
+    'cert-top-title':'Top Hacker 2021',
+    'cert-top-sub': 'Top 11 · Middle Eastern Region',
+    'badge-expert': 'Expert',
+    'badge-adv':    'Advanced',
+    'badge-cert':   'Certified',
+    'flip-expert':  'Expert',
+    'flip-adv':     'Advanced',
+    'flip-top':     'Top 11 ME',
+    'modal-title':  '🔒 Anonymous Message',
+    'modal-sub':    'Your name won\'t appear · anonymous',
+    'modal-ph':     'Write your message here...',
+    'modal-send':   'Send ✦',
+    'modal-success':'✦ Sent Successfully ✦',
+    'inbox-title':  '◈ Inbox',
+    'pin-label':    '◈ Enter Secret PIN',
+    'pin-btn':      'Enter',
+    'pin-error':    '✕ Wrong PIN',
+    'empty-inbox':  '◈ No messages yet',
+    'loading':      '◈ Loading...',
+    'clear-all':    '◈ Clear All',
+    'bio-lines':    ['Dark · web · 20 👑','Python · PHP · JS 💻','Security Researcher 🔐','Top Hacker 2021 🏆'],
+  },
+  ar: {
+    'sec-certs':    '◈ الشهادات والمهارات',
+    'sec-downloads':'◈ ملفات للتحميل',
+    'sec-visitors': '◈ الزوار',
+    'sec-skills':   '◈ المهارات',
+    'sec-stats':    '◈ الإحصائيات',
+    'sec-terminal': '◈ الطرفية',
+    'sec-snippets': '◈ أكواد برمجية',
+    'vis-label':    'إجمالي الزوار',
+    'vis-online':   'متصل الآن',
+    'stat-stars':   'نجوم',
+    'stat-tools':   'أداة مبنية',
+    'stat-langs':   'لغات',
+    'anon-label':   'مجهول',
+    'anon-desc':    ' أرسل رسالة مجهولة 🔒',
+    'file-label':   'إرسال ملف',
+    'file-desc':    ' .txt / .py / .php / كود 📎',
+    'cert-py-title':'تطوير بايثون',
+    'cert-py-sub':  'متقدم · سكريبتات وأتمتة',
+    'cert-php-title':'تطوير PHP',
+    'cert-php-sub': 'باك-إند · تطبيقات ويب',
+    'cert-html-title':'HTML / CSS / JS',
+    'cert-html-sub':'فرونت-إند · هندسة واجهات',
+    'cert-hack-title':'تطوير أدوات اختراق',
+    'cert-hack-sub':'أمن · مبرمج أدوات هجومية',
+    'cert-top-title':'أفضل هاكر 2021',
+    'cert-top-sub': 'المركز 11 · منطقة الشرق الأوسط',
+    'badge-expert': 'خبير',
+    'badge-adv':    'متقدم',
+    'badge-cert':   'معتمد',
+    'flip-expert':  'خبير',
+    'flip-adv':     'متقدم',
+    'flip-top':     '#11 شرق أوسط',
+    'modal-title':  '🔒 رسالة مجهولة',
+    'modal-sub':    'اسمك مش راح يظهر · مجهول',
+    'modal-ph':     'اكتب رسالتك هنا...',
+    'modal-send':   'إرسال ✦',
+    'modal-success':'✦ تم الإرسال بنجاح ✦',
+    'inbox-title':  '◈ صندوق الرسائل',
+    'pin-label':    '◈ أدخل الرمز السري',
+    'pin-btn':      'دخول',
+    'pin-error':    '✕ رمز خاطئ',
+    'empty-inbox':  '◈ لا توجد رسائل بعد',
+    'loading':      '◈ جاري التحميل...',
+    'clear-all':    '◈ حذف الكل',
+    'bio-lines':    ['داك · ويب · 20 👑','بايثون · PHP · JS 💻','باحث أمني 🔐','أفضل هاكر 2021 🏆'],
+  }
+};
+
+let currentLang = 'en';
+
+function applyLang(lang) {
+  const t = translations[lang];
+  // direction
+  document.body.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+  document.getElementById('langBtn').textContent = lang === 'ar' ? 'EN' : 'AR';
+
+  // all data-i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (t[key] !== undefined) el.textContent = t[key];
+  });
+
+  // cert titles/subs (special because they're inside complex elements)
+  const certMap = [
+    ['cert-py-title','cert-py-sub'],
+    ['cert-php-title','cert-php-sub'],
+    ['cert-html-title','cert-html-sub'],
+    ['cert-hack-title','cert-hack-sub'],
+    ['cert-top-title','cert-top-sub'],
+  ];
+  document.querySelectorAll('.cert-title').forEach((el,i) => {
+    if (certMap[i]) el.textContent = t[certMap[i][0]] || el.textContent;
+  });
+  document.querySelectorAll('.cert-sub').forEach((el,i) => {
+    if (certMap[i]) el.textContent = t[certMap[i][1]] || el.textContent;
+  });
+
+  // badges
+  document.querySelectorAll('.cert-badge').forEach(el => {
+    if (el.textContent.trim() === 'Expert'   || el.textContent.trim() === 'خبير')   el.textContent = t['badge-expert'];
+    if (el.textContent.trim() === 'Advanced' || el.textContent.trim() === 'متقدم')  el.textContent = t['badge-adv'];
+    if (el.textContent.trim() === 'Certified'|| el.textContent.trim() === 'معتمد')  el.textContent = t['badge-cert'];
+  });
+
+  // flip back levels
+  document.querySelectorAll('.flip-level').forEach(el => {
+    const v = el.textContent.trim();
+    if (v === 'Expert'   || v === 'خبير')        el.textContent = t['flip-expert'];
+    if (v === 'Advanced' || v === 'متقدم')        el.textContent = t['flip-adv'];
+    if (v === 'Top 11 ME'|| v === '#11 شرق أوسط') el.textContent = t['flip-top'];
+  });
+
+  // modal
+  document.querySelector('.modal-title').textContent    = t['modal-title'];
+  document.querySelector('.modal-sub').textContent      = t['modal-sub'];
+  document.getElementById('msgInput').placeholder       = t['modal-ph'];
+  document.getElementById('sendBtn').textContent        = t['modal-send'];
+  document.getElementById('successMsg').textContent     = t['modal-success'];
+  document.querySelector('.inbox-title').textContent    = t['inbox-title'];
+  document.querySelector('.pin-label').textContent      = t['pin-label'];
+  document.querySelector('.pin-btn').textContent        = t['pin-btn'];
+  document.getElementById('pinError').textContent       = t['pin-error'];
+  document.getElementById('emptyNotice').textContent    = t['empty-inbox'];
+  document.getElementById('loadingSpinner').textContent = t['loading'];
+  document.querySelector('.clear-all-btn').textContent  = t['clear-all'];
+
+  // reset bio typewriter with new lines
+  bioLines = t['bio-lines'];
+  bLine = 0; bChar = 0; bDir = 1;
+
+  localStorage.setItem('lang', lang);
+}
+
+function toggleLang() {
+  currentLang = currentLang === 'en' ? 'ar' : 'en';
+  applyLang(currentLang);
+}
+window.toggleLang = toggleLang;
+
+// load saved lang
+const savedLang = localStorage.getItem('lang');
+if (savedLang) { currentLang = savedLang; applyLang(savedLang); }
+
+// ── Scroll Progress Bar ──
+window.addEventListener('scroll', () => {
+  const el = document.getElementById('scrollBar');
+  if (!el) return;
+  const h = document.documentElement;
+  const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+  el.style.width = pct + '%';
+});
+
+// ── Confetti on Load ──
+function launchConfetti() {
+  const colors = ['#f0d080','#c9a84c','#7a5f2a','#ffffff','#e8d080','#ffe066'];
+  for (let i = 0; i < 80; i++) {
+    const c = document.createElement('div');
+    c.className = 'conf';
+    const size = Math.random() * 8 + 4;
+    c.style.cssText = `
+      left:${Math.random()*100}vw;
+      top:-10px;
+      width:${size}px; height:${size}px;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      border-radius:${Math.random()>0.5?'50%':'2px'};
+      animation-duration:${Math.random()*2+1.5}s;
+      animation-delay:${Math.random()*1.2}s;
+    `;
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 4000);
+  }
+}
+window.addEventListener('load', () => setTimeout(launchConfetti, 300));
+
+// ── Visitor Counter (Firebase — real) ──
+async function initVisitor() {
+  if (!window._firebaseReady) { setTimeout(initVisitor, 500); return; }
+  const fb = window._fb;
+  const visitorsRef = fb.doc(fb.db, 'meta', 'visitors');
+
+  // Count this browser once per session (real cumulative total)
+  if (!sessionStorage.getItem('x1877_counted')) {
+    sessionStorage.setItem('x1877_counted', '1');
+    try { await fb.setDoc(visitorsRef, { count: fb.increment(1) }, { merge: true }); } catch(e){}
+  }
+
+  // Live total, updates for everyone viewing the page right now
+  try {
+    fb.onSnapshot(visitorsRef, (snap) => {
+      const el = document.getElementById('visitorNum');
+      if (el) el.textContent = (snap.exists() ? (snap.data().count || 0) : 0).toLocaleString();
+    });
+  } catch(e) {
+    const el = document.getElementById('visitorNum');
+    if (el) el.textContent = '—';
+  }
+
+  // Real "online now" via heartbeat presence docs
+  const sid = sessionStorage.getItem('x1877_sid') || (Date.now().toString(36) + Math.random().toString(36).slice(2));
+  sessionStorage.setItem('x1877_sid', sid);
+  const presenceRef = fb.doc(fb.db, 'presence', sid);
+  const beat = () => fb.setDoc(presenceRef, { lastSeen: fb.serverTimestamp() }).catch(()=>{});
+  beat();
+  setInterval(beat, 20000);
+
+  let presenceTimes = [];
+  function recomputeOnline(){
+    const cutoff = Date.now() - 45000;
+    const n = presenceTimes.filter(t => t > cutoff).length;
+    const el = document.getElementById('onlineNum');
+    if (el) el.textContent = Math.max(n, 1);
+  }
+  try {
+    fb.onSnapshot(fb.collection(fb.db, 'presence'), (snap) => {
+      presenceTimes = [];
+      snap.forEach(d => {
+        const ls = d.data().lastSeen;
+        presenceTimes.push(ls && ls.toMillis ? ls.toMillis() : 0);
+      });
+      recomputeOnline();
+    });
+    setInterval(recomputeOnline, 10000);
+  } catch(e) {
+    const el = document.getElementById('onlineNum');
+    if (el) el.textContent = '1';
+  }
+}
+initVisitor();
+loadPublicFiles();
+
+// ── Flip Cards Touch (mobile) ──
+document.querySelectorAll('.flip-card').forEach(card => {
+  card.addEventListener('touchstart', () => {
+    card.querySelector('.flip-inner').style.transform = 'rotateY(180deg)';
+  }, {passive:true});
+  card.addEventListener('touchend', () => {
+    setTimeout(() => {
+      card.querySelector('.flip-inner').style.transform = '';
+    }, 800);
+  });
+});
+
+// ── Theme Toggle ──
+function toggleTheme(){
+  const isLight=document.body.classList.toggle('light');
+  document.getElementById('themeBtn').textContent=isLight?'☀️':'🌙';
+  localStorage.setItem('theme',isLight?'light':'dark');
+}
+window.toggleTheme=toggleTheme;
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.getElementById('themeBtn').textContent='☀️';}
+
+// ── Typewriter Bio ──
+let bioLines=['Dark · web · 20 👑','Python · PHP · JS 💻','Security Researcher 🔐','Top Hacker 2021 🏆'];
+let bLine=0,bChar=0,bDir=1;
+function typeBio(){
+  const el=document.getElementById('bioText');
+  if(!el)return;
+  const txt=bioLines[bLine];
+  if(bDir===1){
+    bChar++;el.textContent=txt.slice(0,bChar);
+    if(bChar>=txt.length){bDir=-1;setTimeout(typeBio,1800);return;}
+  }else{
+    bChar--;el.textContent=txt.slice(0,bChar);
+    if(bChar<=0){bDir=1;bLine=(bLine+1)%bioLines.length;setTimeout(typeBio,400);return;}
+  }
+  setTimeout(typeBio,bDir===1?75:40);
+}
+typeBio();
+
+// ── GitHub Live Stats ──
+async function fetchGithubStats(){
+  const cacheKey='ghStatsCache_x1877';
+  try{
+    const cached=JSON.parse(localStorage.getItem(cacheKey)||'null');
+    if(cached && Date.now()-cached.ts<3600000) return cached.data;
+  }catch(e){}
+  const [userRes,reposRes]=await Promise.all([
+    fetch('https://api.github.com/users/x1877'),
+    fetch('https://api.github.com/users/x1877/repos?per_page=100')
+  ]);
+  const user=await userRes.json();
+  const repos=await reposRes.json();
+  const list=Array.isArray(repos)?repos:[];
+  const stars=list.reduce((s,r)=>s+(r.stargazers_count||0),0);
+  const langs=new Set(list.map(r=>r.language).filter(Boolean)).size;
+  const data={repos:user.public_repos ?? list.length, stars, langs:langs||5};
+  try{localStorage.setItem(cacheKey,JSON.stringify({data,ts:Date.now()}));}catch(e){}
+  return data;
+}
+function animateCounters(){
+  document.querySelectorAll('.stat-num').forEach(el=>{
+    const target=+el.dataset.target;
+    const suffix=el.dataset.suffix||'';
+    let cur=0;
+    const step=Math.ceil(target/40)||1;
+    const t=setInterval(()=>{
+      cur=Math.min(cur+step,target);
+      el.textContent=cur+(cur===target?suffix:'');
+      if(cur>=target)clearInterval(t);
+    },35);
+  });
+}
+(async function initStats(){
+  try{
+    const data=await Promise.race([
+      fetchGithubStats(),
+      new Promise((_,rej)=>setTimeout(()=>rej('timeout'),2500))
+    ]);
+    const rEl=document.querySelector('[data-stat="repos"]');
+    const sEl=document.querySelector('[data-stat="stars"]');
+    const lEl=document.querySelector('[data-stat="langs"]');
+    if(rEl && data.repos) rEl.dataset.target=data.repos;
+    if(sEl && data.stars!=null) sEl.dataset.target=data.stars;
+    if(lEl && data.langs) lEl.dataset.target=data.langs;
+  }catch(e){ /* keep fallback numbers already in the markup */ }
+  const statsObs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{if(e.isIntersecting){animateCounters();statsObs.disconnect();}});
+  },{threshold:.5});
+  const statsEl=document.querySelector('.stats-grid');
+  if(statsEl)statsObs.observe(statsEl);
+})();
+
+// ── Terminal (ambient demo → real interactive input) ──
+const termLines=[
+  {prompt:'x1877@kali:~$',cmd:'whoami',out:'x1877 — developer & security researcher'},
+  {prompt:'x1877@kali:~$',cmd:'cat skills.txt',out:'Python · PHP · JS · Bash · C'},
+  {prompt:'x1877@kali:~$',cmd:'ls tools/',out:'scanner.py  bot.py  organizer.py  hasher.py'},
+  {prompt:'x1877@kali:~$',cmd:'git log --oneline -3',out:'a3f91c2 add async fetcher\nb8e04d1 fix threading bug\nc12a3f7 init repo'},
+  {prompt:'x1877@kali:~$',cmd:'echo "keep building 🚀"',out:'keep building 🚀'},
+];
+let tIdx=0, termTimer=null, termInteractive=false;
+function typeTermLine(){
+  if(termInteractive) return;
+  const body=document.getElementById('terminalBody');
+  const cursor=document.getElementById('termCursor');
+  if(tIdx>=termLines.length){tIdx=0;termTimer=setTimeout(()=>{if(!termInteractive){body.innerHTML='<span class="t-hint">// click here and type a command — try "help"</span><span class="t-cursor" id="termCursor"></span>';typeTermLine();}},2500);return;}
+  const l=termLines[tIdx++];
+  const row=document.createElement('div');row.className='t-line';
+  row.style.animationDelay='0s';
+  row.innerHTML=`<span class="t-prompt">${l.prompt}</span><span class="t-cmd"> ${l.cmd}</span>`;
+  body.insertBefore(row,cursor||body.lastChild);
+  termTimer=setTimeout(()=>{
+    if(termInteractive) return;
+    const out=document.createElement('span');out.className='t-out';out.textContent=l.out;
+    body.insertBefore(out,cursor||body.lastChild);
+    body.scrollTop=body.scrollHeight;
+    termTimer=setTimeout(typeTermLine,900);
+  },400);
+}
+termTimer=setTimeout(typeTermLine,800);
+
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+const termCommands={
+  whoami:'x1877 — independent developer · Python/PHP/JS/Bash · builds & sells tools',
+  skills:'Python · PHP · JS · Bash · C',
+  ls:'scanner.py  bot.py  organizer.py  hasher.py',
+  projects:'scanner.py  bot.py  organizer.py  hasher.py',
+  contact:'→ t.me/x1877',
+  'hire me':'let\'s talk → t.me/x1877 📩',
+  hire:'let\'s talk → t.me/x1877 📩',
+  help:'available: help, whoami, skills, projects, contact, sudo, matrix, clear',
+};
+function runTermCommand(raw){
+  const body=document.getElementById('terminalBody');
+  const inputLine=document.getElementById('termInputLine');
+  const cmd=raw.trim();
+  const row=document.createElement('div');row.className='t-line';row.style.opacity='1';
+  row.innerHTML=`<span class="t-prompt">x1877@kali:~$</span><span class="t-cmd"> ${escapeHtml(cmd)}</span>`;
+  body.insertBefore(row,inputLine);
+  if(!cmd){body.scrollTop=body.scrollHeight;return;}
+  const key=cmd.toLowerCase();
+  if(key==='clear'){
+    body.querySelectorAll('.t-line, .t-out').forEach(n=>{if(n!==inputLine)n.remove();});
+    return;
+  }
+  const out=document.createElement('span');out.className='t-out';
+  if(key==='matrix'){
+    out.textContent='initiating matrix.exe...';
+    if(window._spawnCode) for(let i=0;i<40;i++) setTimeout(window._spawnCode,i*30);
+  } else if(key.startsWith('sudo')){
+    out.textContent='Permission denied: x1877 is not in the sudoers file. This incident will be reported.';
+  } else {
+    out.textContent = termCommands[key] || `command not found: ${cmd} — try "help"`;
+  }
+  body.insertBefore(out,inputLine);
+  body.scrollTop=body.scrollHeight;
+}
+function activateTerminal(){
+  if(termInteractive)return;
+  termInteractive=true;
+  clearTimeout(termTimer);
+  const body=document.getElementById('terminalBody');
+  body.innerHTML='';
+  const intro=document.createElement('span');intro.className='t-out';intro.textContent='type "help" to see available commands';
+  body.appendChild(intro);
+  const line=document.createElement('div');line.className='t-line';line.id='termInputLine';line.style.opacity='1';
+  line.innerHTML='<span class="t-prompt">x1877@kali:~$</span><input type="text" id="termInput" class="t-input" autocomplete="off" autocapitalize="off" spellcheck="false"/>';
+  body.appendChild(line);
+  const input=document.getElementById('termInput');
+  input.focus();
+  input.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){
+      const val=input.value;input.value='';
+      runTermCommand(val);
+    }
+  });
+}
+document.getElementById('terminalBody').addEventListener('click',activateTerminal);
+
+// ── Cursor Trail ──
+(function(){
+  const canvas=document.getElementById('trail');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  function resizeTrail(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+  resizeTrail();window.addEventListener('resize',resizeTrail);
+  let sparks=[];
+  if(window.matchMedia('(pointer:fine)').matches){
+    window.addEventListener('mousemove',e=>{
+      sparks.push({x:e.clientX,y:e.clientY,life:1,r:Math.random()*2.5+1.5,gold:Math.random()>0.4});
+      if(sparks.length>60)sparks.shift();
+    });
+  }
+  (function loop(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    sparks.forEach(s=>{
+      ctx.beginPath();ctx.arc(s.x,s.y,Math.max(s.r*s.life,0),0,Math.PI*2);
+      if(s.gold){ctx.shadowColor='rgba(201,168,76,0.8)';ctx.shadowBlur=6;ctx.fillStyle=`rgba(240,208,128,${s.life*0.7})`;}
+      else{ctx.shadowBlur=0;ctx.fillStyle=`rgba(232,224,204,${s.life*0.4})`;}
+      ctx.fill();ctx.shadowBlur=0;
+      s.life-=0.035;
+    });
+    sparks=sparks.filter(s=>s.life>0);
+    requestAnimationFrame(loop);
+  })();
+})();
+
+// ── Name Glitch ──
+(function(){
+  const el=document.getElementById('glitchName');
+  if(!el)return;
+  function glitchBurst(){
+    el.classList.add('glitching');
+    setTimeout(()=>el.classList.remove('glitching'),350);
+    setTimeout(glitchBurst,Math.random()*4000+3500);
+  }
+  setTimeout(glitchBurst,2000);
+})();
+
+// ── Achievement Toast + Konami Easter Egg ──
+function showAchToast(msg){
+  const t=document.getElementById('achToast');
+  if(!t)return;
+  t.textContent=msg;
+  t.classList.add('show');
+  clearTimeout(window._achToastT);
+  window._achToastT=setTimeout(()=>t.classList.remove('show'),2600);
+}
+(function(){
+  const seq=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+  let pos=0;
+  document.addEventListener('keydown',e=>{
+    const key=e.key.length===1?e.key.toLowerCase():e.key;
+    if(key===seq[pos]){
+      pos++;
+      if(pos===seq.length){
+        pos=0;
+        launchConfetti();
+        showAchToast('🏆 Achievement Unlocked: Konami Master');
+      }
+    }else{
+      pos=(key===seq[0])?1:0;
+    }
+  });
+})();
+
+// ── Snippet Tabs ──
+function switchSnippet(lang,tab){
+  document.querySelectorAll('.snippet-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.s-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('snip-'+lang).classList.add('active');
+  tab.classList.add('active');
+  const badges={py:'PY',php:'PHP',js:'JS',bash:'SH'};
+  document.getElementById('sLangBadge').textContent=badges[lang]||lang.toUpperCase();
+}
+window.switchSnippet=switchSnippet;
+
+document.getElementById('chatModal').addEventListener('click',function(e){if(e.target===this)closeChatModal();});
+
+
+</script>
+
+</body>
+</html>
+
+
