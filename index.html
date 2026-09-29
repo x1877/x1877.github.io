@@ -63,8 +63,9 @@ body.light #langBtn { background:#ede8dc; border-color:#c9a84c; }
 #achToast {
   position:fixed; bottom:84px; left:50%; transform:translateX(-50%) translateY(20px);
   background:linear-gradient(135deg,#f0d080,#c9a84c); color:#0c0c0c; font-weight:700; font-size:.8rem;
-  padding:10px 20px; border-radius:30px; z-index:99999; opacity:0; pointer-events:none;
-  transition:opacity .25s, transform .25s; box-shadow:0 4px 24px rgba(201,168,76,0.4); white-space:nowrap;
+  padding:10px 20px; border-radius:20px; z-index:99999; opacity:0; pointer-events:none;
+  transition:opacity .25s, transform .25s; box-shadow:0 4px 24px rgba(201,168,76,0.4);
+  max-width:min(88vw,420px); text-align:center; line-height:1.4;
 }
 #achToast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
@@ -169,6 +170,32 @@ body.light .flip-back { background:linear-gradient(135deg,#e8e0c8,#d4c89a); }
 body { display:flex; justify-content:center; padding:36px 16px 70px; }
 #c { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; }
 #trail { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:5; }
+#crtOverlay { position:fixed; inset:0; pointer-events:none; z-index:6;
+  background:repeating-linear-gradient(180deg, rgba(0,0,0,0.10) 0px, rgba(0,0,0,0.10) 1px, transparent 1px, transparent 3px);
+  opacity:.5; animation:crtFlicker 6s ease-in-out infinite; }
+@keyframes crtFlicker { 0%,100%{opacity:.45} 50%{opacity:.58} }
+@media (pointer:coarse) { #crtOverlay { opacity:.28; animation:none; } }
+
+/* ── Custom Cursor ── */
+@media (pointer:fine) {
+  body.custom-cursor :not(input):not(textarea) { cursor:none !important; }
+}
+#cursorDot { position:fixed; top:0; left:0; width:16px; height:16px; border:1.5px solid #c9a84c;
+  border-radius:3px; pointer-events:none; z-index:999999; transform:translate(-50%,-50%);
+  transition:width .15s,height .15s,border-radius .15s,background .15s,opacity .15s; opacity:0; }
+#cursorDot::after { content:''; position:absolute; top:50%; left:50%; width:3px; height:3px;
+  background:#c9a84c; border-radius:50%; transform:translate(-50%,-50%); }
+#cursorDot.on { opacity:1; }
+#cursorDot.hover { width:30px; height:30px; border-radius:50%; background:rgba(201,168,76,0.12); }
+
+/* ── Context Menu ── */
+.ctx-menu { position:fixed; display:none; flex-direction:column; background:#0d0d0d;
+  border:1px solid #3a3020; border-radius:10px; padding:6px; z-index:999997;
+  box-shadow:0 8px 30px rgba(0,0,0,0.6); font-family:'Courier New',monospace; min-width:170px; }
+.ctx-menu.show { display:flex; }
+.ctx-item { padding:8px 12px; font-size:.72rem; color:#e8e0cc; border-radius:6px; cursor:pointer;
+  white-space:nowrap; transition:background .15s,color .15s; }
+.ctx-item:hover { background:rgba(201,168,76,0.15); color:#f0d080; }
 #glow { position:fixed; top:0; left:0; width:100%; height:100%; background:radial-gradient(ellipse 70% 50% at 50% 0%, rgba(201,168,76,0.09) 0%, transparent 65%); pointer-events:none; z-index:0; }
 .card { position:relative; z-index:1; width:100%; max-width:360px; display:flex; flex-direction:column; align-items:center; }
 .av-wrap { width:110px; height:110px; position:relative; margin-bottom:16px; flex-shrink:0; }
@@ -415,7 +442,7 @@ animation:badgePulse 2s ease infinite;
 
 /* ═══════════ STATS ═══════════ */
 .stats-section { width:100%; margin-bottom:24px; }
-.stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; width:100%; }
+.stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(90px,1fr)); gap:10px; width:100%; }
 .stat-box {
   background:#0e0e0e; border:1px solid #1e1a08; border-radius:12px;
   padding:14px 10px; text-align:center; position:relative; overflow:hidden;
@@ -436,6 +463,22 @@ animation:badgePulse 2s ease infinite;
   -webkit-text-fill-color:transparent; background-clip:text; display:block;
 }
 .stat-lbl { font-size:.58rem; color:#6b6050; letter-spacing:.18em; text-transform:uppercase; margin-top:3px; display:block; }
+
+/* ═══════════ PROJECTS ═══════════ */
+.projects-section { width:100%; margin-bottom:24px; }
+.projects-grid { display:flex; flex-direction:column; gap:10px; width:100%; }
+.project-card {
+  background:#0e0e0e; border:1px solid #1e1a08; border-radius:12px;
+  padding:13px 16px; text-decoration:none; display:block; transition:all .25s;
+}
+.project-card:hover { border-color:#7a5f2a; transform:translateY(-2px); box-shadow:0 6px 20px rgba(201,168,76,0.12); }
+.project-top { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:4px; }
+.project-name { font-family:'Cinzel',serif; font-size:.82rem; font-weight:700; letter-spacing:.03em;
+  background:linear-gradient(135deg,#f0d080,#c9a84c); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.project-stars { font-size:.68rem; color:#c9a84c; white-space:nowrap; flex-shrink:0; }
+.project-desc { font-size:.7rem; color:#8a7a5a; line-height:1.5; margin-bottom:7px; }
+.project-lang { display:inline-flex; align-items:center; gap:5px; font-size:.6rem; color:#6b6050; letter-spacing:.05em; text-transform:uppercase; }
+.project-lang-dot { width:7px; height:7px; border-radius:50%; background:#c9a84c; display:inline-block; flex-shrink:0; }
 
 /* ═══════════ TERMINAL ═══════════ */
 .terminal-section { width:100%; margin-bottom:24px; }
@@ -525,6 +568,14 @@ animation:crownFloat 3s ease infinite;
 <button id="langBtn" onclick="toggleLang()" title="Toggle language">EN</button>
 <canvas id="c"></canvas>
 <canvas id="trail"></canvas>
+<div id="crtOverlay"></div>
+<div id="cursorDot"></div>
+<div id="ctxMenu" class="ctx-menu">
+  <div class="ctx-item" data-action="copy">📋 Copy link</div>
+  <div class="ctx-item" data-action="source">💻 View source</div>
+  <div class="ctx-item" data-action="reload">🔄 Reload</div>
+  <div class="ctx-item" data-action="fact">✦ Random fact</div>
+</div>
 <div id="glow"></div>
 <div class="card">
   <div class="av-wrap">
@@ -677,8 +728,8 @@ animation:crownFloat 3s ease infinite;
         <span class="stat-num" data-target="47" data-stat="repos">47</span>
         <span class="stat-lbl" data-i18n="stat-tools">Tools Built</span>
       </div>
-      <div class="stat-box">
-        <span class="stat-num" data-target="10" data-stat="stars">10</span>
+      <div class="stat-box" style="display:none">
+        <span class="stat-num" data-target="0" data-stat="stars">0</span>
         <span class="stat-lbl" data-i18n="stat-stars">Stars</span>
       </div>
       <div class="stat-box">
@@ -686,6 +737,15 @@ animation:crownFloat 3s ease infinite;
         <span class="stat-lbl" data-i18n="stat-langs">Langs</span>
       </div>
     </div>
+  </div>
+
+  <div class="div"></div>
+
+  <!-- PROJECTS -->
+  <div class="sec" data-i18n="sec-projects">◈ Projects</div>
+  <div class="projects-section">
+    <div class="loading-spinner" id="projLoading">◈ جاري التحميل...</div>
+    <div class="projects-grid" id="projectsGrid"></div>
   </div>
 
   <div class="div"></div>
@@ -1372,6 +1432,7 @@ const translations = {
     'sec-visitors': '◈ Visitors',
     'sec-skills':   '◈ Skills',
     'sec-stats':    '◈ Stats',
+    'sec-projects': '◈ Projects',
     'sec-terminal': '◈ Terminal',
     'sec-snippets': '◈ Code Snippets',
     'vis-label':    'Total Visitors',
@@ -1419,6 +1480,7 @@ const translations = {
     'sec-visitors': '◈ الزوار',
     'sec-skills':   '◈ المهارات',
     'sec-stats':    '◈ الإحصائيات',
+    'sec-projects': '◈ المشاريع',
     'sec-terminal': '◈ الطرفية',
     'sec-snippets': '◈ أكواد برمجية',
     'vis-label':    'إجمالي الزوار',
@@ -1663,25 +1725,49 @@ function typeBio(){
 }
 typeBio();
 
-// ── GitHub Live Stats ──
+// ── GitHub Live Stats + Projects ──
 async function fetchGithubStats(){
   const cacheKey='ghStatsCache_x1877';
   try{
     const cached=JSON.parse(localStorage.getItem(cacheKey)||'null');
-    if(cached && Date.now()-cached.ts<3600000) return cached.data;
+    if(cached && cached.data && cached.data.topRepos && Date.now()-cached.ts<3600000) return cached.data;
   }catch(e){}
   const [userRes,reposRes]=await Promise.all([
     fetch('https://api.github.com/users/x1877'),
     fetch('https://api.github.com/users/x1877/repos?per_page=100')
   ]);
+  if(!userRes.ok || !reposRes.ok) throw new Error('github api '+userRes.status+'/'+reposRes.status);
   const user=await userRes.json();
   const repos=await reposRes.json();
   const list=Array.isArray(repos)?repos:[];
-  const stars=list.reduce((s,r)=>s+(r.stargazers_count||0),0);
-  const langs=new Set(list.map(r=>r.language).filter(Boolean)).size;
-  const data={repos:user.public_repos ?? list.length, stars, langs:langs||5};
+  const own=list.filter(r=>!r.fork);
+  const stars=own.reduce((s,r)=>s+(r.stargazers_count||0),0);
+  const langs=new Set(own.map(r=>r.language).filter(Boolean)).size;
+  const topRepos=own
+    .slice()
+    .sort((a,b)=>(b.stargazers_count||0)-(a.stargazers_count||0) || new Date(b.pushed_at)-new Date(a.pushed_at))
+    .slice(0,6)
+    .map(r=>({name:r.name,desc:r.description||'',stars:r.stargazers_count||0,lang:r.language||'',url:r.html_url}));
+  const data={repos:list.length<100?own.length:(user.public_repos ?? own.length), stars, langs, topRepos};
   try{localStorage.setItem(cacheKey,JSON.stringify({data,ts:Date.now()}));}catch(e){}
   return data;
+}
+const LANG_COLORS={Python:'#3572A5',JavaScript:'#f1e05a',HTML:'#e34c26',CSS:'#563d7c',PHP:'#4F5D95',Shell:'#89e051',C:'#555555','C++':'#f34b7d',TypeScript:'#3178c6'};
+function renderProjects(repos){
+  const grid=document.getElementById('projectsGrid');
+  const loading=document.getElementById('projLoading');
+  if(loading) loading.style.display='none';
+  if(!grid) return;
+  if(!repos || !repos.length){ grid.innerHTML='<div class="t-hint" style="padding-left:0">// no public repos yet</div>'; return; }
+  grid.innerHTML=repos.map(r=>`
+    <a class="project-card" href="${escapeHtml(r.url)}" target="_blank" rel="noopener">
+      <div class="project-top">
+        <span class="project-name">${escapeHtml(r.name)}</span>
+        <span class="project-stars">⭐ ${r.stars}</span>
+      </div>
+      ${r.desc?`<div class="project-desc">${escapeHtml(r.desc)}</div>`:''}
+      ${r.lang?`<span class="project-lang"><span class="project-lang-dot" style="background:${LANG_COLORS[r.lang]||'#c9a84c'}"></span>${escapeHtml(r.lang)}</span>`:''}
+    </a>`).join('');
 }
 function animateCounters(){
   document.querySelectorAll('.stat-num').forEach(el=>{
@@ -1692,23 +1778,29 @@ function animateCounters(){
     const t=setInterval(()=>{
       cur=Math.min(cur+step,target);
       el.textContent=cur+(cur===target?suffix:'');
-      if(cur>=target)clearInterval(t);
+      if(cur>=target){clearInterval(t);el.dataset.done='1';}
     },35);
   });
 }
+function applyStats(data){
+  [['repos',data.repos],['stars',data.stars],['langs',data.langs]].forEach(([k,v])=>{
+    const el=document.querySelector('[data-stat="'+k+'"]');
+    if(!el || v==null) return;
+    el.dataset.target=v;
+    const box=el.closest('.stat-box'); if(box) box.style.display='';
+    if(el.dataset.done) el.textContent=v; // counters already ran → jump to the real number
+  });
+}
 (async function initStats(){
-  try{
-    const data=await Promise.race([
-      fetchGithubStats(),
-      new Promise((_,rej)=>setTimeout(()=>rej('timeout'),2500))
-    ]);
-    const rEl=document.querySelector('[data-stat="repos"]');
-    const sEl=document.querySelector('[data-stat="stars"]');
-    const lEl=document.querySelector('[data-stat="langs"]');
-    if(rEl && data.repos) rEl.dataset.target=data.repos;
-    if(sEl && data.stars!=null) sEl.dataset.target=data.stars;
-    if(lEl && data.langs) lEl.dataset.target=data.langs;
-  }catch(e){ /* keep fallback numbers already in the markup */ }
+  const ghPromise=fetchGithubStats();
+  // projects + stats apply whenever the data arrives; failures fail quietly
+  ghPromise.then(d=>renderProjects(d.topRepos)).catch(()=>{
+    const loading=document.getElementById('projLoading');
+    if(loading){loading.style.animation='none';loading.textContent='◈ GitHub unavailable right now';}
+  });
+  ghPromise.then(applyStats).catch(()=>{});
+  // give the API a short head start so the count-up animates to real numbers
+  try{ await Promise.race([ghPromise,new Promise((_,rej)=>setTimeout(()=>rej('timeout'),2500))]); }catch(e){}
   const statsObs=new IntersectionObserver(entries=>{
     entries.forEach(e=>{if(e.isIntersecting){animateCounters();statsObs.disconnect();}});
   },{threshold:.5});
@@ -1844,13 +1936,13 @@ document.getElementById('terminalBody').addEventListener('click',activateTermina
 })();
 
 // ── Achievement Toast + Konami Easter Egg ──
-function showAchToast(msg){
+function showAchToast(msg,ms){
   const t=document.getElementById('achToast');
   if(!t)return;
   t.textContent=msg;
   t.classList.add('show');
   clearTimeout(window._achToastT);
-  window._achToastT=setTimeout(()=>t.classList.remove('show'),2600);
+  window._achToastT=setTimeout(()=>t.classList.remove('show'),ms||2600);
 }
 (function(){
   const seq=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
@@ -1867,6 +1959,69 @@ function showAchToast(msg){
     }else{
       pos=(key===seq[0])?1:0;
     }
+  });
+})();
+
+// ── Custom Cursor (desktop only) ──
+(function(){
+  const dot=document.getElementById('cursorDot');
+  if(!dot || !window.matchMedia('(pointer:fine)').matches) return;
+  document.body.classList.add('custom-cursor');
+  const hoverSel='a,button,[onclick],.stat-box,.project-card,.cert-card,.flip-card,.terminal-body,.s-tab,.ctx-item';
+  window.addEventListener('mousemove',e=>{
+    dot.style.left=e.clientX+'px';
+    dot.style.top=e.clientY+'px';
+  });
+  document.addEventListener('mouseover',e=>{
+    if(e.target.closest('input,textarea')){dot.classList.remove('on');return;}
+    dot.classList.add('on');
+    dot.classList.toggle('hover',!!e.target.closest(hoverSel));
+  });
+  document.addEventListener('mouseout',e=>{ if(!e.relatedTarget) dot.classList.remove('on'); });
+})();
+
+// ── Hacker Right-Click Menu (desktop only) ──
+(function(){
+  const menu=document.getElementById('ctxMenu');
+  if(!menu || !window.matchMedia('(pointer:fine)').matches) return;
+  const facts=[
+    'Ping of death: an oversized ping packet that crashed old systems in the 90s',
+    'The famous first "actual bug" was a moth found in a Harvard Mark II relay in 1947',
+    'sudo stands for "superuser do"',
+    'Creeper (1971) was an early ARPANET self-replicating program that just printed a taunt',
+    'Python is named after Monty Python, not the snake'
+  ];
+  const close=()=>menu.classList.remove('show');
+  document.addEventListener('contextmenu',e=>{
+    if(e.target.closest('input,textarea')) return; // keep the native menu for text fields
+    e.preventDefault();
+    menu.classList.add('show');
+    menu.style.left=Math.max(8,Math.min(e.clientX,window.innerWidth-menu.offsetWidth-8))+'px';
+    menu.style.top=Math.max(8,Math.min(e.clientY,window.innerHeight-menu.offsetHeight-8))+'px';
+  });
+  document.addEventListener('click',close);
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape') close(); });
+  window.addEventListener('scroll',close,{passive:true});
+  menu.addEventListener('click',e=>{
+    const item=e.target.closest('.ctx-item');
+    if(!item) return;
+    const a=item.dataset.action;
+    if(a==='copy'){
+      if(navigator.clipboard) navigator.clipboard.writeText(location.href).then(()=>showAchToast('🔗 Link copied')).catch(()=>showAchToast('Copy failed'));
+      else showAchToast('Copy not supported here');
+    }
+    else if(a==='source') window.open('https://github.com/x1877/x1877.github.io','_blank','noopener');
+    else if(a==='reload') location.reload();
+    else if(a==='fact') showAchToast('✦ '+facts[Math.floor(Math.random()*facts.length)],4200);
+  });
+})();
+
+// ── Tab Title Trick ──
+(function(){
+  const original=document.title;
+  const away={en:'👀 come back!',ar:'👀 وين رحت؟ ارجع!'};
+  document.addEventListener('visibilitychange',()=>{
+    document.title=document.hidden?(away[currentLang]||away.en):original;
   });
 })();
 
