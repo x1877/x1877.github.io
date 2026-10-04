@@ -5,6 +5,12 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 <title>X1877</title>
+<meta name="theme-color" content="#0a0a0a"/>
+<meta name="description" content="X1877 — developer &amp; security researcher"/>
+<meta property="og:title" content="X1877"/>
+<meta property="og:description" content="Developer &amp; security researcher — Python · PHP · JS"/>
+<meta property="og:type" content="website"/>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0a0a'/%3E%3Ctext x='32' y='47' font-size='40' font-family='serif' font-weight='900' text-anchor='middle' fill='%23c9a84c'%3EX%3C/text%3E%3C/svg%3E"/>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Raleway:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -589,12 +595,35 @@ body.light #toTop{background:#ede8dc;border-color:#c9a84c55}
 .kb-row kbd{background:#1a1608;border:1px solid #3a3020;border-radius:5px;padding:1px 8px;color:#f0d080;font-family:inherit}
 @keyframes ringPulse{0%,100%{filter:drop-shadow(0 0 4px rgba(201,168,76,.35))}50%{filter:drop-shadow(0 0 16px rgba(240,208,128,.85))}}
 body.music .av-ring{animation:spin 7s linear infinite,ringPulse .9s ease-in-out infinite}
+/* idle screensaver */
+.card{transition:opacity 1s ease}
+#rainCanvas{transition:opacity 1s ease}
+body.idle .card{opacity:.08;pointer-events:none}
+body.idle #rainCanvas{opacity:.85}
+/* access card */
+.av-wrap img{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+#idCard{position:fixed;inset:0;z-index:999998;background:rgba(0,0,0,.82);display:none;align-items:center;justify-content:center;padding:20px}
+#idCard.open{display:flex}
+.id-box{position:relative;width:100%;max-width:320px;background:linear-gradient(160deg,#0f0d06,#0a0a0a);border:1px solid #7a5f2a;border-radius:16px;
+  padding:20px;overflow:hidden;font-family:'Courier New',monospace;direction:ltr;text-align:left;box-shadow:0 0 40px rgba(201,168,76,.18)}
+.id-scan{position:absolute;left:0;right:0;height:60px;top:-60px;background:linear-gradient(180deg,transparent,rgba(201,168,76,.18),transparent);animation:idScan 3s linear infinite;pointer-events:none}
+@keyframes idScan{to{top:100%}}
+.id-top{display:flex;gap:14px;align-items:center;margin-bottom:14px}
+.id-top img{width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid #c9a84c;background:#000}
+.id-title{font-family:'Cinzel',serif;color:#7a5f2a;letter-spacing:.22em;font-size:.6rem;margin-bottom:4px}
+.id-name{font-family:'Cinzel',serif;font-size:1.4rem;font-weight:900;letter-spacing:.1em;background:linear-gradient(135deg,#f0d080,#c9a84c);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.id-row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px dashed #1e1a08;font-size:.72rem}
+.id-row span{color:#7a5f2a}
+.id-row b{color:#e8e0cc;font-weight:400;text-align:right}
+.id-row b.ok{color:#4ade80}
+.id-hint{text-align:center;font-size:.58rem;letter-spacing:.2em;color:#6b6050;margin-top:12px;text-transform:uppercase}
 #glitchFlash{position:fixed;inset:0;z-index:99997;pointer-events:none;opacity:0;
   background:repeating-linear-gradient(0deg,rgba(201,168,76,.18) 0 3px,rgba(0,0,0,0) 3px 7px)}
 #glitchFlash.on{animation:glitchFx .4s steps(2,end)}
 @keyframes glitchFx{0%{opacity:1;transform:translateX(-6px)}30%{opacity:.9;transform:translateX(7px) skewX(3deg);filter:hue-rotate(60deg)}60%{opacity:.7;transform:translateX(-4px);filter:hue-rotate(160deg)}100%{opacity:0;transform:none}}
 .av-wrap{cursor:pointer}
-@media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}.spark,.tap-ring,#glitchFlash{display:none}body.music .av-ring{animation:spin 7s linear infinite}}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}.spark,.tap-ring,#glitchFlash{display:none}body.music .av-ring{animation:spin 7s linear infinite}.id-scan{display:none}}
 </style>
 
 </head>
@@ -1017,6 +1046,17 @@ body.music .av-ring{animation:spin 7s linear infinite,ringPulse .9s ease-in-out 
   <div class="kb-row"><span>Terminal</span><kbd>/</kbd></div>
   <div class="kb-row"><span>Top</span><kbd>G</kbd></div>
   <div class="kb-row"><span>This help</span><kbd>?</kbd></div>
+</div></div>
+<div id="idCard"><div class="id-box">
+  <div class="id-scan"></div>
+  <div class="id-top"><img id="idImg" alt=""/><div><div class="id-title">◈ ACCESS CARD</div><div class="id-name">X1877</div></div></div>
+  <div class="id-row"><span>HANDLE</span><b>@7AMO</b></div>
+  <div class="id-row"><span>ROLE</span><b>Developer · Security</b></div>
+  <div class="id-row"><span>STACK</span><b>Python · PHP · JS · Bash · C</b></div>
+  <div class="id-row"><span>RANK</span><b>Top 11 ME · 2021</b></div>
+  <div class="id-row"><span>CLEARANCE</span><b>ROOT</b></div>
+  <div class="id-row"><span>STATUS</span><b class="ok">● ONLINE</b></div>
+  <div class="id-hint">tap to close</div>
 </div></div>
 <div id="floatBubble" onclick="openChatModal()">
   <div class="bubble-ping"></div>
@@ -1895,7 +1935,7 @@ const termCommands={
   contact:'→ t.me/x1877',
   'hire me':'let\'s talk → t.me/x1877 📩',
   hire:'let\'s talk → t.me/x1877 📩',
-  help:'available: help, whoami, skills, projects, contact, neofetch, date, uptime, joke, theme, lang, rain, color, hack, calc, coffee, flip, ping, echo, history, sudo, matrix, clear',
+  help:'available: help, whoami, skills, projects, contact, neofetch, date, uptime, joke, theme, lang, rain, color, hack, calc, coffee, flip, nmap, flag, ping, echo, history, sudo, matrix, clear',
 };
 function runTermCommand(raw){
   const body=document.getElementById('terminalBody');
@@ -1951,7 +1991,7 @@ function activateTerminal(){
     } else if(e.key==='Tab'){
       e.preventDefault();
       const v=input.value.trim().toLowerCase(); if(!v)return;
-      const all=Object.keys(termCommands).concat(['neofetch','date','uptime','joke','theme','lang','rain','color','hack','calc','coffee','flip','ping','echo','history','matrix','clear']);
+      const all=Object.keys(termCommands).concat(['neofetch','date','uptime','joke','theme','lang','rain','color','hack','calc','coffee','flip','nmap','flag','ping','echo','history','matrix','clear']);
       const m=all.filter(c=>c.startsWith(v)); if(m.length===1) input.value=m[0];
     }
   });
@@ -2141,7 +2181,7 @@ document.getElementById('chatModal').addEventListener('click',function(e){if(e.t
       cols.forEach((y,i)=>{
         const py=Math.floor(y);
         rx.fillStyle=rainC.b; rx.fillText(rg(),i*16,(py-1)*16);
-        rx.fillStyle=rainC.h; rx.fillText(rg(),i*16,py*16);
+        rx.fillStyle=rainC.h; rx.fillText(Math.random()<.015?'X1877'[Math.floor(Math.random()*5)]:rg(),i*16,py*16);
         cols[i]=(py*16>rc.height&&Math.random()>.975)?0:y+1;
       });
     }
@@ -2172,9 +2212,21 @@ document.getElementById('chatModal').addEventListener('click',function(e){if(e.t
 
   // ── Tap the avatar → change Matrix colour ──
   const avEl=document.querySelector('.av-wrap');
-  if(avEl) avEl.addEventListener('click',()=>{
-    const n=cycleRain(); if(window.showAchToast) showAchToast('▓ Matrix: '+n,1400);
-  });
+  const idCard=$('idCard'), idImg=$('idImg');
+  let lp=null, lpFired=false;
+  const openId=()=>{ const im=document.querySelector('.av-wrap img'); if(im&&idImg) idImg.src=im.currentSrc||im.src; idCard.classList.add('open'); };
+  const closeId=()=>idCard.classList.remove('open');
+  if(avEl){
+    avEl.addEventListener('pointerdown',()=>{ lpFired=false; clearTimeout(lp); lp=setTimeout(()=>{ lpFired=true; openId(); },600); });
+    ['pointerup','pointerleave','pointercancel'].forEach(ev=>avEl.addEventListener(ev,()=>clearTimeout(lp)));
+    avEl.addEventListener('contextmenu',e=>e.preventDefault());
+    avEl.addEventListener('click',()=>{
+      if(lpFired){ lpFired=false; return; }
+      const n=cycleRain(); if(window.showAchToast) showAchToast('▓ Matrix: '+n,1400);
+    });
+  }
+  idCard.addEventListener('click',closeId);
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeId(); });
 
   // ── Glitch flash when switching theme / language ──
   const gf=$('glitchFlash');
@@ -2208,6 +2260,19 @@ document.getElementById('chatModal').addEventListener('click',function(e){if(e.t
     },1500);
   }
   if(document.readyState==='complete') welcome(); else addEventListener('load',welcome);
+
+  // ── Idle screensaver: UI fades, Matrix takes over; touch to wake ──
+  let idleT=null;
+  function goIdle(){
+    const v=document.querySelector('video');
+    if(document.hidden||(v&&!v.paused)||document.querySelector('.modal-overlay.open,.inbox-overlay.open,#idCard.open,#kbHelp.open')){
+      idleT=setTimeout(goIdle,25000); return;
+    }
+    document.body.classList.add('idle');
+  }
+  function wake(){ document.body.classList.remove('idle'); clearTimeout(idleT); idleT=setTimeout(goIdle,25000); }
+  ['pointerdown','pointermove','keydown','touchstart','scroll'].forEach(ev=>addEventListener(ev,wake,{passive:true}));
+  wake();
 
   ['toggleTheme','toggleLang'].forEach(n=>{
     const f=window[n];
@@ -2331,6 +2396,16 @@ document.getElementById('chatModal').addEventListener('click',function(e){if(e.t
       case 'lang': toggleLang(); out.textContent='language switched'; return true;
       case 'rain': toggleRain(); out.textContent='matrix rain '+(rainOn?'on':'off'); return true;
       case 'echo': out.textContent=arg; return true;
+      case 'nmap': {
+        const host=arg||'x1877.github.io'; out.style.whiteSpace='pre';
+        const lines=['Starting Nmap 7.94 ( https://nmap.org )','Nmap scan report for '+host,'PORT      STATE  SERVICE','22/tcp    open   ssh','80/tcp    open   http','443/tcp   open   https','1337/tcp  open   x1877','Nmap done: 1 IP address scanned'];
+        out.textContent=''; let n=0; const tb=$('terminalBody');
+        const iv=setInterval(()=>{ out.textContent+=(n?'\n':'')+lines[n]; n++; if(tb) tb.scrollTop=tb.scrollHeight; if(n>=lines.length) clearInterval(iv); },320);
+        return true;
+      }
+      case 'ssh': out.textContent='Permission denied (publickey). 🔒'; return true;
+      case 'flag': out.textContent='X1877{y0u_f0und_m3}'; return true;
+      case 'cat': out.textContent=(arg==='flag.txt')?'X1877{y0u_f0und_m3}':(arg?'cat: '+arg+': No such file':'usage: cat <file>'); return true;
       case 'coffee':
         out.style.whiteSpace='pre'; out.textContent='    ( (\n     ) )\n  .______.\n  |      |]\n  \\      /\n   `----\'\n  coffee.exe — ready ☕'; return true;
       case 'flip': out.textContent=Math.random()<.5?'HEADS':'TAILS'; return true;
