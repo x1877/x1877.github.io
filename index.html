@@ -587,7 +587,14 @@ body.light #toTop{background:#ede8dc;border-color:#c9a84c55}
 .kb-title{font-family:'Cinzel',serif;color:#c9a84c;letter-spacing:.2em;font-size:.75rem;margin-bottom:12px;text-align:center}
 .kb-row{display:flex;justify-content:space-between;padding:6px 0;font-size:.74rem;color:#e8e0cc;border-top:1px dashed #1e1a08}
 .kb-row kbd{background:#1a1608;border:1px solid #3a3020;border-radius:5px;padding:1px 8px;color:#f0d080;font-family:inherit}
-@media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}.spark,.tap-ring{display:none}}
+@keyframes ringPulse{0%,100%{filter:drop-shadow(0 0 4px rgba(201,168,76,.35))}50%{filter:drop-shadow(0 0 16px rgba(240,208,128,.85))}}
+body.music .av-ring{animation:spin 7s linear infinite,ringPulse .9s ease-in-out infinite}
+#glitchFlash{position:fixed;inset:0;z-index:99997;pointer-events:none;opacity:0;
+  background:repeating-linear-gradient(0deg,rgba(201,168,76,.18) 0 3px,rgba(0,0,0,0) 3px 7px)}
+#glitchFlash.on{animation:glitchFx .4s steps(2,end)}
+@keyframes glitchFx{0%{opacity:1;transform:translateX(-6px)}30%{opacity:.9;transform:translateX(7px) skewX(3deg);filter:hue-rotate(60deg)}60%{opacity:.7;transform:translateX(-4px);filter:hue-rotate(160deg)}100%{opacity:0;transform:none}}
+.av-wrap{cursor:pointer}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}.spark,.tap-ring,#glitchFlash{display:none}body.music .av-ring{animation:spin 7s linear infinite}}
 </style>
 
 </head>
@@ -926,6 +933,7 @@ body.light #toTop{background:#ede8dc;border-color:#c9a84c55}
   </div>
   <div id="copyToast">Copied ✓</div>
   <div id="toTop" title="Top">↑</div>
+  <div id="glitchFlash"></div>
   <div id="achToast"></div>
   <div class="div"></div>
   <div class="footer"> · <b class="secret-trigger" onclick="openInbox()">X1877 · </b></div>
@@ -1887,7 +1895,7 @@ const termCommands={
   contact:'→ t.me/x1877',
   'hire me':'let\'s talk → t.me/x1877 📩',
   hire:'let\'s talk → t.me/x1877 📩',
-  help:'available: help, whoami, skills, projects, contact, neofetch, date, uptime, joke, theme, lang, rain, ping, echo, history, sudo, matrix, clear',
+  help:'available: help, whoami, skills, projects, contact, neofetch, date, uptime, joke, theme, lang, rain, color, hack, calc, coffee, flip, ping, echo, history, sudo, matrix, clear',
 };
 function runTermCommand(raw){
   const body=document.getElementById('terminalBody');
@@ -1943,7 +1951,7 @@ function activateTerminal(){
     } else if(e.key==='Tab'){
       e.preventDefault();
       const v=input.value.trim().toLowerCase(); if(!v)return;
-      const all=Object.keys(termCommands).concat(['neofetch','date','uptime','joke','theme','lang','rain','ping','echo','history','matrix','clear']);
+      const all=Object.keys(termCommands).concat(['neofetch','date','uptime','joke','theme','lang','rain','color','hack','calc','coffee','flip','ping','echo','history','matrix','clear']);
       const m=all.filter(c=>c.startsWith(v)); if(m.length===1) input.value=m[0];
     }
   });
@@ -2105,9 +2113,14 @@ document.getElementById('chatModal').addEventListener('click',function(e){if(e.t
   const t0=Date.now();
 
   // ── Matrix rain (always on; bright head glyph, speeds up while scrolling) ──
-  let rainOn=false, rainRaf=null, rc=null, rx=null, cols=[], boost=0;
+  let rainOn=false, rainRaf=null, rc=null, rx=null, cols=[], cols2=[], boost=0;
   const glyphs='01アイウエオカキクケコサシスセソ{}[]<>/\\$#=+*';
   const rg=()=>glyphs[Math.floor(Math.random()*glyphs.length)];
+  const palettes=[{n:'gold',b:'#c9a84c',h:'#fff1c4',d:'#7a5f2a'},{n:'green',b:'#1fbf4a',h:'#d8ffe0',d:'#14702c'},{n:'red',b:'#c92c2c',h:'#ffd5d5',d:'#7a1a1a'},{n:'ice',b:'#3aa0d8',h:'#dff4ff',d:'#1f6a8f'}];
+  let pi=0; try{pi=+localStorage.getItem('rainColor')||0;}catch(e){} if(pi<0||pi>=palettes.length) pi=0;
+  let rainC=palettes[pi];
+  function setRainByName(n,persist){ const k=palettes.findIndex(x=>x.n===n); if(k<0) return; rainC=palettes[k]; if(persist){ pi=k; try{localStorage.setItem('rainColor',pi);}catch(e){} } }
+  function cycleRain(){ pi=(pi+1)%palettes.length; rainC=palettes[pi]; try{localStorage.setItem('rainColor',pi);}catch(e){} return rainC.n; }
   function rainInit(){
     if(!rc){
       rc=document.createElement('canvas'); rc.id='rainCanvas'; document.body.insertBefore(rc,document.body.firstChild);
@@ -2115,17 +2128,20 @@ document.getElementById('chatModal').addEventListener('click',function(e){if(e.t
     }
     rc.width=innerWidth; rc.height=innerHeight;
     cols=Array(Math.floor(rc.width/16)).fill(0).map(()=>Math.random()*rc.height/16);
+    cols2=Array(Math.floor(rc.width/11)).fill(0).map(()=>Math.random()*rc.height/11);
   }
   function rainDraw(){
     rx.fillStyle=document.body.classList.contains('light')?'rgba(245,240,232,0.08)':'rgba(10,10,10,0.08)';
     rx.fillRect(0,0,rc.width,rc.height);
+    rx.font='10px monospace'; rx.fillStyle=rainC.d;
+    cols2.forEach((y,i)=>{ const py=Math.floor(y); rx.fillText(rg(),i*11,py*11); cols2[i]=(py*11>rc.height&&Math.random()>.97)?0:y+.45; });
     rx.font='14px monospace';
     const passes=boost>0.5?2:1; boost*=0.94;
     for(let p=0;p<passes;p++){
       cols.forEach((y,i)=>{
         const py=Math.floor(y);
-        rx.fillStyle='#c9a84c'; rx.fillText(rg(),i*16,(py-1)*16);
-        rx.fillStyle='#fff1c4'; rx.fillText(rg(),i*16,py*16);
+        rx.fillStyle=rainC.b; rx.fillText(rg(),i*16,(py-1)*16);
+        rx.fillStyle=rainC.h; rx.fillText(rg(),i*16,py*16);
         cols[i]=(py*16>rc.height&&Math.random()>.975)?0:y+1;
       });
     }
@@ -2144,6 +2160,59 @@ document.getElementById('chatModal').addEventListener('click',function(e){if(e.t
   addEventListener('scroll',()=>{ boost=Math.min(boost+1.2,6); },{passive:true});
   const toggleRain=()=>{ setRain(!rainOn); if(window.showAchToast) showAchToast(rainOn?'▓ Matrix ON':'▓ Matrix OFF',1400); };
   setRain(true);
+
+  // ── Rain follows your finger / mouse ──
+  function feedRain(e){
+    if(!rainOn||!cols.length) return;
+    const c=Math.floor(e.clientX/16), r=e.clientY/16;
+    for(let k=-1;k<=1;k++){ if(cols[c+k]!==undefined) cols[c+k]=r; }
+  }
+  document.addEventListener('pointerdown',feedRain,{passive:true});
+  document.addEventListener('pointermove',e=>{ if(e.pointerType==='mouse'||e.buttons) feedRain(e); },{passive:true});
+
+  // ── Tap the avatar → change Matrix colour ──
+  const avEl=document.querySelector('.av-wrap');
+  if(avEl) avEl.addEventListener('click',()=>{
+    const n=cycleRain(); if(window.showAchToast) showAchToast('▓ Matrix: '+n,1400);
+  });
+
+  // ── Glitch flash when switching theme / language ──
+  const gf=$('glitchFlash');
+  function flash(){ if(reduce||!gf) return; gf.classList.remove('on'); void gf.offsetWidth; gf.classList.add('on'); }
+  // ── Avatar ring pulses while music plays ──
+  const bgm=$('bgMusic');
+  if(bgm){
+    const syncMusic=()=>document.body.classList.toggle('music',!bgm.paused);
+    bgm.addEventListener('play',syncMusic); bgm.addEventListener('pause',syncMusic); bgm.addEventListener('ended',syncMusic);
+    syncMusic();
+  }
+
+  // ── Secret: tap the name 7 times → ROOT mode ──
+  const nameEl=$('glitchName'); let nt=0, ntT=null;
+  if(nameEl) nameEl.addEventListener('click',()=>{
+    nt++; clearTimeout(ntT); ntT=setTimeout(()=>{nt=0;},2500);
+    if(nt>=7){
+      nt=0; setRainByName('green',false); flash();
+      if(window.showAchToast) showAchToast('⚠ ROOT ACCESS GRANTED',2600);
+      if(window._spawnCode) for(let i=0;i<40;i++) setTimeout(window._spawnCode,i*30);
+    }
+  });
+
+  // ── Welcome toast with visit count ──
+  function welcome(){
+    setTimeout(()=>{
+      let n=1; try{ n=(+localStorage.getItem('visits')||0)+1; localStorage.setItem('visits',n); }catch(e){}
+      if(!window.showAchToast) return;
+      const ar=(typeof currentLang!=='undefined'&&currentLang==='ar');
+      showAchToast(n===1?(ar?'▓ أهلاً بيك':'▓ Welcome'):(ar?'▓ أهلاً بيك مرة ثانية · زيارة #'+n:'▓ Welcome back · visit #'+n),2400);
+    },1500);
+  }
+  if(document.readyState==='complete') welcome(); else addEventListener('load',welcome);
+
+  ['toggleTheme','toggleLang'].forEach(n=>{
+    const f=window[n];
+    if(typeof f==='function') window[n]=function(){ flash(); return f.apply(this,arguments); };
+  });
 
   // ── Back to top ──
   const topBtn=$('toTop');
@@ -2262,6 +2331,27 @@ document.getElementById('chatModal').addEventListener('click',function(e){if(e.t
       case 'lang': toggleLang(); out.textContent='language switched'; return true;
       case 'rain': toggleRain(); out.textContent='matrix rain '+(rainOn?'on':'off'); return true;
       case 'echo': out.textContent=arg; return true;
+      case 'coffee':
+        out.style.whiteSpace='pre'; out.textContent='    ( (\n     ) )\n  .______.\n  |      |]\n  \\      /\n   `----\'\n  coffee.exe — ready ☕'; return true;
+      case 'flip': out.textContent=Math.random()<.5?'HEADS':'TAILS'; return true;
+      case 'calc': {
+        if(!arg||arg.length>60||!/^[0-9+\-*/().%\s]+$/.test(arg)){ out.textContent='usage: calc 12*(3+4)'; return true; }
+        try{ const r=Function('"use strict";return ('+arg+')')(); out.textContent=(typeof r==='number'&&isFinite(r))?String(r):'error'; }catch(e){ out.textContent='error'; }
+        return true;
+      }
+      case 'color': { const n=cycleRain(); out.textContent='matrix colour → '+n; return true; }
+      case 'hack': {
+        out.style.whiteSpace='pre';
+        const stages=['scanning ports…','bypassing firewall…','injecting payload…','cracking hash…','escalating privileges…'];
+        const tb=$('terminalBody'); let pct=0;
+        const iv=setInterval(()=>{
+          pct+=4; const n=Math.round(pct/5);
+          out.textContent=stages[Math.min(4,Math.floor(pct/20))]+'\n['+'█'.repeat(n)+'░'.repeat(20-n)+'] '+pct+'%';
+          if(tb) tb.scrollTop=tb.scrollHeight;
+          if(pct>=100){ clearInterval(iv); out.textContent='[████████████████████] 100%\nACCESS GRANTED ✓  (just kidding 😄)'; if(tb) tb.scrollTop=tb.scrollHeight; }
+        },110);
+        return true;
+      }
       case 'history': out.style.whiteSpace='pre'; out.textContent=(window._termHist||[]).map((h,i)=>(i+1)+'  '+h).join('\n'); return true;
       case 'ping': {
         const host=arg||'x1877.github.io'; out.style.whiteSpace='pre';
