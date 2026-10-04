@@ -558,6 +558,48 @@ animation:crownFloat 3s ease infinite;
 0%,100%{transform:translateY(0) rotate(-5deg)}
 50%{transform:translateY(-4px) rotate(5deg)}
 }
+
+/* ═══════════ NEW FEATURES ═══════════ */
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
+.reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
+.av-wrap{transition:transform .15s ease-out;transform-style:preserve-3d;will-change:transform}
+.sys-box{width:100%;background:#0e0e0e;border:1px solid #1e1a08;border-radius:12px;padding:14px;margin-bottom:24px;
+  font-family:'Courier New',monospace;font-size:.72rem;direction:ltr;text-align:left;position:relative;overflow:hidden}
+.sys-box::before{content:'';position:absolute;top:0;left:0;width:100%;height:2px;background:linear-gradient(90deg,transparent,#c9a84c,transparent)}
+.sys-clock{font-family:'Cinzel',serif;font-size:1.7rem;font-weight:900;text-align:center;letter-spacing:.08em;
+  background:linear-gradient(135deg,#f0d080,#c9a84c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sys-date{text-align:center;font-size:.6rem;letter-spacing:.2em;color:#6b6050;text-transform:uppercase;margin:2px 0 10px}
+.sys-row{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-top:1px dashed #1e1a08}
+.sys-k{color:#7a5f2a;flex-shrink:0}
+.sys-v{color:#e8e0cc;text-align:right;word-break:break-word}
+.sys-btns{display:flex;gap:8px;margin-top:10px}
+.sys-btn{flex:1;text-align:center;padding:9px 6px;border:1px solid #2a2010;border-radius:8px;color:#c9a84c;font-size:.68rem;
+  letter-spacing:.08em;cursor:pointer;background:#0a0a0a;transition:.25s;user-select:none}
+.sys-btn:hover{border-color:#c9a84c;box-shadow:0 0 14px rgba(201,168,76,.2)}
+.sys-btn:active{transform:scale(.96)}
+.quote-box{width:100%;margin-bottom:24px;padding:16px 14px;border:1px solid #1e1a08;border-radius:12px;background:#0e0e0e;
+  text-align:center;cursor:pointer;position:relative;transition:.3s}
+.quote-box:hover{border-color:#7a5f2a}
+.quote-text{font-size:.85rem;line-height:1.7;color:#e8e0cc;min-height:3.4em;transition:opacity .3s}
+.quote-text.fade{opacity:0}
+.quote-hint{font-size:.55rem;letter-spacing:.2em;color:#6b6050;margin-top:8px;text-transform:uppercase}
+#toTop{position:fixed;bottom:24px;right:24px;z-index:9990;width:44px;height:44px;border-radius:50%;background:#0e0e0e;
+  border:1px solid #2a2010;color:#c9a84c;font-size:1.1rem;display:flex;align-items:center;justify-content:center;cursor:pointer;
+  opacity:0;pointer-events:none;transform:translateY(14px);transition:.3s;box-shadow:0 2px 12px rgba(0,0,0,.4)}
+#toTop.show{opacity:1;pointer-events:auto;transform:none}
+#toTop:hover{border-color:#c9a84c;box-shadow:0 0 16px rgba(201,168,76,.3)}
+#rainCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.32}
+#kbHelp{position:fixed;inset:0;z-index:999998;background:rgba(0,0,0,.78);display:none;align-items:center;justify-content:center;padding:20px}
+#kbHelp.open{display:flex}
+.kb-box{background:#0d0d0d;border:1px solid #3a3020;border-radius:14px;padding:20px;max-width:320px;width:100%;
+  font-family:'Courier New',monospace;direction:ltr;text-align:left}
+.kb-title{font-family:'Cinzel',serif;color:#c9a84c;letter-spacing:.2em;font-size:.75rem;margin-bottom:12px;text-align:center}
+.kb-row{display:flex;justify-content:space-between;padding:6px 0;font-size:.74rem;color:#e8e0cc;border-top:1px dashed #1e1a08}
+.kb-row kbd{background:#1a1608;border:1px solid #3a3020;border-radius:5px;padding:1px 8px;color:#f0d080;font-family:inherit}
+body.light .sys-box,body.light .quote-box,body.light #toTop,body.light .sys-btn{background:#ede8dc;border-color:#c9a84c55}
+body.light .sys-v,body.light .quote-text{color:#1a1208}
+body.light .sys-date,body.light .quote-hint{color:#7a5f2a}
 </style>
 
 </head>
@@ -855,6 +897,28 @@ animation:crownFloat 3s ease infinite;
   </div>
 
   <div class="div"></div>
+  <div class="sec" data-i18n="sec-sys">◈ System</div>
+  <div class="sys-box">
+    <div class="sys-clock" id="sysClock">--:--:--</div>
+    <div class="sys-date" id="sysDate"></div>
+    <div class="sys-row"><span class="sys-k">session</span><span class="sys-v" id="sysSession">00:00</span></div>
+    <div class="sys-row"><span class="sys-k">os / browser</span><span class="sys-v" id="sysUA">…</span></div>
+    <div class="sys-row"><span class="sys-k">screen</span><span class="sys-v" id="sysScreen">…</span></div>
+    <div class="sys-row"><span class="sys-k">network</span><span class="sys-v" id="sysNet">…</span></div>
+    <div class="sys-row"><span class="sys-k">battery</span><span class="sys-v" id="sysBat">n/a</span></div>
+    <div class="sys-btns">
+      <div class="sys-btn" id="btnShare">⇪ Share</div>
+      <div class="sys-btn" id="btnRain">▓ Matrix</div>
+      <div class="sys-btn" id="btnKeys">⌨ Keys</div>
+    </div>
+  </div>
+  <div class="sec" data-i18n="sec-quote">◈ Quote</div>
+  <div class="quote-box" id="quoteBox">
+    <div class="quote-text" id="quoteText"></div>
+    <div class="quote-hint" data-i18n="quote-hint">tap for another</div>
+  </div>
+
+  <div class="div"></div>
   <div class="sec">◈</div>
   <div class="links">
     <div class="chat-send-btn" onclick="openChatModal()">
@@ -895,6 +959,7 @@ animation:crownFloat 3s ease infinite;
     </a>
   </div>
   <div id="copyToast">Copied ✓</div>
+  <div id="toTop" title="Top">↑</div>
   <div id="achToast"></div>
   <div class="div"></div>
   <div class="footer"> · <b class="secret-trigger" onclick="openInbox()">X1877 · </b></div>
@@ -969,6 +1034,16 @@ animation:crownFloat 3s ease infinite;
 </div>
 
 <!-- FLOATING BUBBLE -->
+<div id="kbHelp"><div class="kb-box">
+  <div class="kb-title">◈ SHORTCUTS</div>
+  <div class="kb-row"><span>Theme</span><kbd>T</kbd></div>
+  <div class="kb-row"><span>Language</span><kbd>L</kbd></div>
+  <div class="kb-row"><span>Music</span><kbd>M</kbd></div>
+  <div class="kb-row"><span>Matrix rain</span><kbd>R</kbd></div>
+  <div class="kb-row"><span>Terminal</span><kbd>/</kbd></div>
+  <div class="kb-row"><span>Top</span><kbd>G</kbd></div>
+  <div class="kb-row"><span>This help</span><kbd>?</kbd></div>
+</div></div>
 <div id="floatBubble" onclick="openChatModal()">
   <div class="bubble-ping"></div>
   <svg fill="none" viewBox="0 0 24 24" stroke="rgba(10,10,10,0.9)" stroke-width="2">
@@ -1434,6 +1509,9 @@ const translations = {
     'sec-stats':    '◈ Stats',
     'sec-projects': '◈ Projects',
     'sec-terminal': '◈ Terminal',
+    'sec-sys': '◈ System',
+    'sec-quote': '◈ Quote',
+    'quote-hint': 'tap for another',
     'sec-snippets': '◈ Code Snippets',
     'vis-label':    'Total Visitors',
     'vis-online':   'online now',
@@ -1482,6 +1560,9 @@ const translations = {
     'sec-stats':    '◈ الإحصائيات',
     'sec-projects': '◈ المشاريع',
     'sec-terminal': '◈ الطرفية',
+    'sec-sys': '◈ النظام',
+    'sec-quote': '◈ اقتباس',
+    'quote-hint': 'اضغط لاقتباس ثاني',
     'sec-snippets': '◈ أكواد برمجية',
     'vis-label':    'إجمالي الزوار',
     'vis-online':   'متصل الآن',
@@ -1846,7 +1927,7 @@ const termCommands={
   contact:'→ t.me/x1877',
   'hire me':'let\'s talk → t.me/x1877 📩',
   hire:'let\'s talk → t.me/x1877 📩',
-  help:'available: help, whoami, skills, projects, contact, sudo, matrix, clear',
+  help:'available: help, whoami, skills, projects, contact, neofetch, date, uptime, quote, joke, theme, lang, rain, ping, echo, history, share, sudo, matrix, clear',
 };
 function runTermCommand(raw){
   const body=document.getElementById('terminalBody');
@@ -1857,6 +1938,7 @@ function runTermCommand(raw){
   body.insertBefore(row,inputLine);
   if(!cmd){body.scrollTop=body.scrollHeight;return;}
   const key=cmd.toLowerCase();
+  (window._termHist=window._termHist||[]).push(cmd); window._termHistPos=window._termHist.length;
   if(key==='clear'){
     body.querySelectorAll('.t-line, .t-out').forEach(n=>{if(n!==inputLine)n.remove();});
     return;
@@ -1867,6 +1949,8 @@ function runTermCommand(raw){
     if(window._spawnCode) for(let i=0;i<40;i++) setTimeout(window._spawnCode,i*30);
   } else if(key.startsWith('sudo')){
     out.textContent='Permission denied: x1877 is not in the sudoers file. This incident will be reported.';
+  } else if(window._termExtra && window._termExtra(key,cmd,out)){
+    /* handled by extra commands */
   } else {
     out.textContent = termCommands[key] || `command not found: ${cmd} — try "help"`;
   }
@@ -1890,6 +1974,17 @@ function activateTerminal(){
     if(e.key==='Enter'){
       const val=input.value;input.value='';
       runTermCommand(val);
+    } else if(e.key==='ArrowUp'){
+      const h=window._termHist||[]; if(!h.length)return; e.preventDefault();
+      window._termHistPos=Math.max(0,(window._termHistPos??h.length)-1); input.value=h[window._termHistPos]||'';
+    } else if(e.key==='ArrowDown'){
+      const h=window._termHist||[]; if(!h.length)return; e.preventDefault();
+      window._termHistPos=Math.min(h.length,(window._termHistPos??h.length)+1); input.value=h[window._termHistPos]||'';
+    } else if(e.key==='Tab'){
+      e.preventDefault();
+      const v=input.value.trim().toLowerCase(); if(!v)return;
+      const all=Object.keys(termCommands).concat(['neofetch','date','uptime','quote','joke','theme','lang','rain','ping','echo','history','share','matrix','clear']);
+      const m=all.filter(c=>c.startsWith(v)); if(m.length===1) input.value=m[0];
     }
   });
 }
@@ -2041,6 +2136,176 @@ document.getElementById('chatModal').addEventListener('click',function(e){if(e.t
 
 </script>
 
+
+<script>
+// ═══════════ NEW FEATURES ═══════════
+(function(){
+  const $=id=>document.getElementById(id);
+  const isAr=()=>typeof currentLang!=='undefined' && currentLang==='ar';
+  const pad=n=>String(n).padStart(2,'0');
+  const t0=Date.now();
+
+  // ── Live clock + session timer ──
+  function tick(){
+    const d=new Date();
+    $('sysClock').textContent=pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
+    $('sysDate').textContent=d.toLocaleDateString(isAr()?'ar-IQ':'en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    const sec=Math.floor((Date.now()-t0)/1000);
+    $('sysSession').textContent=pad(Math.floor(sec/60))+':'+pad(sec%60);
+  }
+  tick(); setInterval(tick,1000);
+
+  // ── Device info ──
+  function parseUA(){
+    const u=navigator.userAgent;
+    const os=/Android/i.test(u)?'Android':/iPhone|iPad|iPod/i.test(u)?'iOS':/Windows/i.test(u)?'Windows':/Mac OS/i.test(u)?'macOS':/Linux/i.test(u)?'Linux':'Unknown';
+    const br=/Edg\//.test(u)?'Edge':/OPR\//.test(u)?'Opera':/Firefox\//.test(u)?'Firefox':/Chrome\//.test(u)?'Chrome':/Safari\//.test(u)?'Safari':'Browser';
+    return os+' · '+br;
+  }
+  $('sysUA').textContent=parseUA();
+  $('sysScreen').textContent=screen.width+'×'+screen.height+' @'+(window.devicePixelRatio||1)+'x';
+  function net(){
+    const c=navigator.connection||{};
+    $('sysNet').textContent=(navigator.onLine?'online':'offline')+(c.effectiveType?' · '+c.effectiveType:'');
+  }
+  net(); addEventListener('online',net); addEventListener('offline',net);
+  if(navigator.getBattery){
+    navigator.getBattery().then(b=>{
+      const up=()=>{$('sysBat').textContent=Math.round(b.level*100)+'%'+(b.charging?' ⚡':'');};
+      up(); b.addEventListener('levelchange',up); b.addEventListener('chargingchange',up);
+    }).catch(()=>{});
+  }
+
+  // ── Share / copy ──
+  function shareSite(){
+    const data={title:'X1877',url:location.href};
+    if(navigator.share){ navigator.share(data).catch(()=>{}); }
+    else if(window.copyText){ copyText(location.href,null); }
+  }
+  $('btnShare').addEventListener('click',shareSite);
+
+  // ── Matrix rain ──
+  let rainOn=false, rainRaf=null, rc=null, rx=null, cols=[];
+  const glyphs='01アイウエオカキクケコサシスセソ{}[]<>/\\$#=+*';
+  function rainInit(){
+    if(!rc){
+      rc=document.createElement('canvas'); rc.id='rainCanvas'; document.body.insertBefore(rc,document.body.firstChild);
+      rx=rc.getContext('2d');
+    }
+    rc.width=innerWidth; rc.height=innerHeight;
+    cols=Array(Math.floor(rc.width/16)).fill(0).map(()=>Math.random()*rc.height/16);
+  }
+  function rainDraw(){
+    rx.fillStyle='rgba(10,10,10,0.08)'; rx.fillRect(0,0,rc.width,rc.height);
+    rx.fillStyle='#c9a84c'; rx.font='14px monospace';
+    cols.forEach((y,i)=>{
+      rx.fillText(glyphs[Math.floor(Math.random()*glyphs.length)],i*16,y*16);
+      cols[i]=(y*16>rc.height&&Math.random()>.975)?0:y+1;
+    });
+    rainRaf=requestAnimationFrame(rainDraw);
+  }
+  function setRain(on){
+    rainOn=on;
+    if(on){ rainInit(); rc.style.display='block'; if(!rainRaf) rainDraw(); }
+    else { if(rainRaf){cancelAnimationFrame(rainRaf);rainRaf=null;} if(rc) rc.style.display='none'; }
+    $('btnRain').style.borderColor=on?'#c9a84c':'';
+  }
+  addEventListener('resize',()=>{ if(rainOn) rainInit(); });
+  document.addEventListener('visibilitychange',()=>{
+    if(!rainOn) return;
+    if(document.hidden){ cancelAnimationFrame(rainRaf); rainRaf=null; } else if(!rainRaf) rainDraw();
+  });
+  const toggleRain=()=>{ setRain(!rainOn); if(window.showAchToast) showAchToast(rainOn?'▓ Matrix ON':'▓ Matrix OFF',1400); };
+  $('btnRain').addEventListener('click',toggleRain);
+
+  // ── Quotes ──
+  const quotes={
+    en:['Talk is cheap. Ship the code.','Every bug is a lesson wearing a disguise.','Security is a habit, not a feature.','Make it work, make it right, make it fast.','The best exploit is a well-read manual.','Curiosity is the only root access that matters.','Weak passwords are just open doors with a sign on them.','Break things on your own machine first.'],
+    ar:['الكلام رخيص، وريني الكود.','كل باگ هو درس متنكر.','الأمان عادة مو ميزة.','خليه يشتغل، بعدين خليه صح، بعدين خليه سريع.','أقوى ثغرة هي دليل مقروء زين.','الفضول هو الـ root الحقيقي.','الباسوردات الضعيفة هي أبواب مفتوحة مكتوب عليها أهلاً.','خرّب على جهازك أول شي.']
+  };
+  let qi=Math.floor(Math.random()*quotes.en.length);
+  function showQuote(next){
+    const el=$('quoteText'); const list=quotes[isAr()?'ar':'en'];
+    if(next) qi=(qi+1)%list.length;
+    el.classList.add('fade');
+    setTimeout(()=>{ el.textContent='“'+list[qi%list.length]+'”'; el.classList.remove('fade'); },next?250:0);
+  }
+  showQuote(false);
+  $('quoteBox').addEventListener('click',()=>showQuote(true));
+  $('langBtn').addEventListener('click',()=>setTimeout(()=>{showQuote(false);tick();},50));
+
+  // ── Back to top ──
+  const topBtn=$('toTop');
+  addEventListener('scroll',()=>topBtn.classList.toggle('show',scrollY>500),{passive:true});
+  topBtn.addEventListener('click',()=>scrollTo({top:0,behavior:'smooth'}));
+
+  // ── Scroll reveal ──
+  if('IntersectionObserver' in window){
+    const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);} }),{threshold:.12});
+    document.querySelectorAll('.card > .sec, .vbox, .certs-section, .visitor-box, .flip-section, .stat-box, .terminal-box, .snippet-box, .sys-box, .quote-box, .links').forEach(el=>{
+      el.classList.add('reveal'); io.observe(el);
+    });
+  }
+
+  // ── Avatar 3D tilt ──
+  const av=document.querySelector('.av-wrap');
+  if(av && matchMedia('(hover:hover)').matches){
+    addEventListener('mousemove',e=>{
+      const r=av.getBoundingClientRect(), dx=(e.clientX-(r.left+r.width/2))/innerWidth, dy=(e.clientY-(r.top+r.height/2))/innerHeight;
+      av.style.transform='perspective(500px) rotateY('+(dx*28)+'deg) rotateX('+(-dy*28)+'deg)';
+    });
+  }
+
+  // ── Keyboard shortcuts ──
+  const kb=$('kbHelp');
+  const openKb=()=>kb.classList.add('open'), closeKb=()=>kb.classList.remove('open');
+  $('btnKeys').addEventListener('click',openKb);
+  kb.addEventListener('click',e=>{ if(e.target===kb) closeKb(); });
+  document.addEventListener('keydown',e=>{
+    if(e.ctrlKey||e.metaKey||e.altKey) return;
+    const tag=(e.target.tagName||'').toLowerCase();
+    if(tag==='input'||tag==='textarea'||e.target.isContentEditable) return;
+    if(document.querySelector('.modal-overlay.open,.inbox-overlay.open')) return;
+    const k=e.key.toLowerCase();
+    if(e.key==='Escape') closeKb();
+    else if(e.key==='?') kb.classList.toggle('open');
+    else if(k==='t') toggleTheme();
+    else if(k==='l') toggleLang();
+    else if(k==='m'){ const b=$('musicBtn'); if(b) b.click(); }
+    else if(k==='r') toggleRain();
+    else if(k==='g') scrollTo({top:0,behavior:'smooth'});
+    else if(k==='/'){ e.preventDefault(); const tb=$('terminalBody'); tb.scrollIntoView({behavior:'smooth',block:'center'}); setTimeout(()=>tb.click(),400); }
+  });
+
+  // ── Extra terminal commands ──
+  window._termExtra=function(key,raw,out){
+    const [c,...rest]=raw.trim().split(/\s+/); const arg=rest.join(' ');
+    switch(c.toLowerCase()){
+      case 'neofetch':
+        out.style.whiteSpace='pre'; out.textContent=
+'  x1877@kali\n  ─────────────\n  OS:       '+parseUA()+'\n  Shell:    zsh (fake)\n  Langs:    Python · PHP · JS · Bash · C\n  Screen:   '+screen.width+'×'+screen.height+'\n  Uptime:   '+Math.floor((Date.now()-t0)/1000)+'s\n  Theme:    '+(document.body.classList.contains('light')?'light':'dark')+' / gold';
+        return true;
+      case 'date': case 'time': out.textContent=new Date().toString(); return true;
+      case 'uptime': out.textContent='up '+Math.floor((Date.now()-t0)/1000)+' seconds (this session)'; return true;
+      case 'quote': { const l=quotes.en; out.textContent='“'+l[Math.floor(Math.random()*l.length)]+'”'; return true; }
+      case 'joke': { const j=['There are 10 types of people: those who read binary and those who don\'t.','A SQL query walks into a bar, sees two tables and asks: "Can I join you?"','It works on my machine. — every developer, ever','!false — it\'s funny because it\'s true.']; out.textContent=j[Math.floor(Math.random()*j.length)]; return true; }
+      case 'theme': toggleTheme(); out.textContent='theme switched'; return true;
+      case 'lang': toggleLang(); out.textContent='language switched'; return true;
+      case 'rain': toggleRain(); out.textContent='matrix rain '+(rainOn?'on':'off'); return true;
+      case 'share': shareSite(); out.textContent='sharing…'; return true;
+      case 'echo': out.textContent=arg; return true;
+      case 'history': out.style.whiteSpace='pre'; out.textContent=(window._termHist||[]).map((h,i)=>(i+1)+'  '+h).join('\n'); return true;
+      case 'ping': {
+        const host=arg||'x1877.github.io'; out.style.whiteSpace='pre';
+        out.textContent='PING '+host+'\n';
+        let n=0; const iv=setInterval(()=>{ n++; out.textContent+='64 bytes: seq='+n+' ttl=57 time='+(8+Math.random()*30).toFixed(1)+' ms\n'; if(n>=3) clearInterval(iv); },450);
+        return true;
+      }
+    }
+    return false;
+  };
+})();
+</script>
 </body>
 </html>
 
